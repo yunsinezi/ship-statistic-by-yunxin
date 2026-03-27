@@ -1,0 +1,3440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>船舶静力学课程设计系统 — 武汉理工大学船海学院</title>
+
+    <!-- Bootstrap 5 CDN（工科蓝白主题基础） -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* ══════════════════════════════════════════════════
+           全局样式 — 工科蓝白主题
+           ══════════════════════════════════════════════════ */
+        :root {
+            --blue-dark:   #1a4a8a;   /* 深蓝：导航栏、标题 */
+            --blue-mid:    #2e7dd1;   /* 中蓝：按钮、强调 */
+            --blue-light:  #e8f0fb;   /* 浅蓝：背景、卡片 */
+            --blue-border: #c8d8f0;   /* 蓝色边框 */
+            --orange:      #e67e22;   /* 橙色：警告、强调数值 */
+            --green:       #27ae60;   /* 绿色：成功状态 */
+            --red:         #e74c3c;   /* 红色：错误状态 */
+            --text-dark:   #1a2a3a;   /* 深色文字 */
+            --text-mid:    #4a5568;   /* 中色文字 */
+        }
+
+        body {
+            background: #f0f4fa;
+            color: var(--text-dark);
+            font-family: "Microsoft YaHei", "SimHei", "PingFang SC", sans-serif;
+            font-size: 14px;
+        }
+
+        /* ── 顶部导航栏 ── */
+        .navbar-ship {
+            background: linear-gradient(90deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+            padding: 0;
+            box-shadow: 0 2px 8px rgba(26,74,138,0.3);
+        }
+        .navbar-ship .nav-main-title {
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            padding: 12px 0 4px;
+        }
+        .navbar-ship .nav-sub-title {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.78rem;
+            padding-bottom: 10px;
+        }
+        .navbar-ship .nav-badge {
+            background: rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.9);
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+
+        /* ── 卡片通用样式 ── */
+        .card-ship {
+            background: #fff;
+            border: 1px solid var(--blue-border);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(26,74,138,0.07);
+            margin-bottom: 18px;
+        }
+        .card-ship .card-header-ship {
+            background: var(--blue-light);
+            border-bottom: 2px solid var(--blue-mid);
+            border-radius: 8px 8px 0 0;
+            padding: 10px 16px;
+            font-weight: bold;
+            color: var(--blue-dark);
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-ship .card-body-ship {
+            padding: 16px;
+        }
+
+        /* ── 步骤编号圆圈 ── */
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: var(--blue-mid);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* ── 表单控件 ── */
+        .form-label-ship {
+            font-weight: 600;
+            color: var(--blue-dark);
+            margin-bottom: 4px;
+            font-size: 0.88rem;
+        }
+        .form-control-ship {
+            border: 1px solid var(--blue-border);
+            border-radius: 5px;
+            font-size: 0.88rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control-ship:focus {
+            border-color: var(--blue-mid);
+            box-shadow: 0 0 0 3px rgba(46,125,209,0.15);
+            outline: none;
+        }
+
+        /* ── 型值表输入区 ── */
+        #offsetsInput {
+            font-family: "Courier New", "Consolas", monospace;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            min-height: 200px;
+            background: #f8faff;
+            border: 1px solid var(--blue-border);
+            border-radius: 5px;
+            padding: 10px;
+            resize: vertical;
+        }
+        #offsetsInput:focus {
+            border-color: var(--blue-mid);
+            box-shadow: 0 0 0 3px rgba(46,125,209,0.15);
+            outline: none;
+        }
+
+        /* ── 坐标系说明框 ── */
+        .coord-box {
+            background: #fffbf0;
+            border: 1px solid #f0d080;
+            border-left: 4px solid #f0a020;
+            border-radius: 5px;
+            padding: 10px 14px;
+            font-size: 0.82rem;
+            color: #5a4010;
+        }
+
+        /* ── 按钮 ── */
+        .btn-calc {
+            background: var(--blue-dark);
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn-calc:hover {
+            background: var(--blue-mid);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .btn-calc:active {
+            transform: translateY(0);
+        }
+        .btn-export {
+            background: #27ae60;
+            color: #fff;
+            border: none;
+            padding: 9px 22px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-export:hover {
+            background: #219a52;
+            color: #fff;
+        }
+        .btn-fill-example {
+            background: transparent;
+            color: var(--blue-mid);
+            border: 1px solid var(--blue-mid);
+            padding: 5px 14px;
+            border-radius: 5px;
+            font-size: 0.82rem;
+            transition: all 0.2s;
+        }
+        .btn-fill-example:hover {
+            background: var(--blue-light);
+        }
+
+        /* ── 状态提示条 ── */
+        .status-bar {
+            padding: 8px 14px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-idle    { background: #f8f9fa; color: #888; border: 1px solid #ddd; }
+        .status-loading { background: #e8f0fb; color: var(--blue-mid); border: 1px solid var(--blue-border); }
+        .status-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* ── 结果展示区 ── */
+        .result-panel {
+            display: none;  /* 初始隐藏，计算成功后显示 */
+        }
+
+        /* ── 结果数值卡片 ── */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .result-item {
+            background: var(--blue-light);
+            border: 1px solid var(--blue-border);
+            border-radius: 8px;
+            padding: 14px 12px;
+            text-align: center;
+        }
+        .result-item .r-label {
+            font-size: 0.78rem;
+            color: var(--text-mid);
+            margin-bottom: 4px;
+        }
+        .result-item .r-symbol {
+            font-size: 0.85rem;
+            color: var(--blue-dark);
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .result-item .r-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--blue-dark);
+            line-height: 1;
+        }
+        .result-item .r-unit {
+            font-size: 0.75rem;
+            color: var(--text-mid);
+            margin-top: 4px;
+        }
+        .result-item.highlight {
+            background: linear-gradient(135deg, var(--blue-dark), var(--blue-mid));
+            border-color: var(--blue-dark);
+        }
+        .result-item.highlight .r-label,
+        .result-item.highlight .r-symbol,
+        .result-item.highlight .r-unit { color: rgba(255,255,255,0.8); }
+        .result-item.highlight .r-value { color: #fff; font-size: 1.6rem; }
+
+        /* ── 计算过程表格 ── */
+        .process-table th {
+            background: var(--blue-dark);
+            color: #fff;
+            font-size: 0.8rem;
+            text-align: center;
+            white-space: nowrap;
+            padding: 8px 10px;
+        }
+        .process-table td {
+            font-size: 0.82rem;
+            text-align: center;
+            padding: 6px 10px;
+            font-family: "Courier New", monospace;
+        }
+        .process-table tr:nth-child(even) td {
+            background: var(--blue-light);
+        }
+
+        /* ── 加载动画 ── */
+        .spinner-inline {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── 页脚 ── */
+        .footer-ship {
+            background: var(--blue-dark);
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 14px;
+            font-size: 0.78rem;
+            margin-top: 24px;
+        }
+
+        /* ── 阶段4新增：曲线预览样式 ── */
+        #plotImg:hover { opacity: 0.92; }
+        .plot-tab-active {
+            background: #7c3aed !important;
+            color: white !important;
+        }
+
+        /* ── 阶段3新增：静水力表格样式 ── */
+        #hydroTable thead th {
+            background: var(--blue-dark);
+            color: #fff;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 6px 8px;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        #hydroTable tbody td {
+            text-align: center;
+            padding: 4px 8px;
+        }
+        #hydroTable tbody tr:nth-child(even) td { background: var(--blue-light); }
+        #hydroTable tbody tr:hover td { background: #d0e4f8; }
+        /* 吃水列固定 */
+        #hydroTable th:first-child,
+        #hydroTable td:first-child {
+            position: sticky;
+            left: 0;
+            background: var(--blue-dark);
+            color: #fff;
+            z-index: 3;
+            font-weight: bold;
+        }
+        #hydroTable tbody td:first-child {
+            background: var(--blue-light);
+            color: var(--blue-dark);
+        }
+
+        /* ── 阶段3新增：列切换按钮 ── */
+        .col-toggle-btn {
+            font-size: 0.72rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid var(--blue-border);
+            background: white;
+            color: var(--text-mid);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .col-toggle-btn.active {
+            background: var(--blue-mid);
+            color: white;
+            border-color: var(--blue-mid);
+        }
+
+        /* ── 阶段3新增：公式卡片 ── */
+        .formula-card {
+            background: #f8faff;
+            border: 1px solid var(--blue-border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+        }
+        .formula-card .f-name { font-weight: bold; color: var(--blue-dark); margin-bottom: 4px; }
+        .formula-card .f-eq   { font-family: "Courier New", monospace; color: #1a4a8a; }
+        .formula-card .f-note { color: var(--text-light); font-size: 0.75rem; margin-top: 3px; }
+
+        /* ── 阶段2新增：Excel 上传区域 ── */
+        .upload-drop-zone {
+            border: 2px dashed var(--blue-mid);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: var(--blue-light);
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .upload-drop-zone:hover,
+        .upload-drop-zone.drag-over {
+            background: #d0e4f8;
+            border-color: var(--blue-dark);
+        }
+
+        /* ── 阶段2新增：型值表预览表格 ── */
+        .preview-table th {
+            background: var(--blue-dark);
+            color: #fff;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 5px 6px;
+            white-space: nowrap;
+        }
+        .preview-table td {
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 4px 6px;
+            font-family: "Courier New", monospace;
+        }
+        .preview-table tr:nth-child(even) td { background: var(--blue-light); }
+
+        /* ── 阶段2新增：校验报告 ── */
+        .validation-item {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+        .validation-warn    { background: #fff3cd; color: #856404; border-left: 3px solid #ffc107; }
+        .validation-error   { background: #f8d7da; color: #721c24; border-left: 3px solid #dc3545; }
+        .validation-fix     { background: #d1ecf1; color: #0c5460; border-left: 3px solid #17a2b8; }
+        .validation-ok      { background: #d4edda; color: #155724; border-left: 3px solid #28a745; }
+
+        /* ── 阶段2新增：Tab 样式微调 ── */
+        #inputModeTabs .nav-link {
+            color: var(--text-mid);
+            padding: 6px 14px;
+            font-size: 0.85rem;
+        }
+        #inputModeTabs .nav-link.active {
+            color: var(--blue-dark);
+            font-weight: bold;
+            border-bottom-color: transparent;
+        }
+
+        /* ── Step 7 样式（阶段7新增）── */
+        .word-info-section {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .word-info-section h6 {
+            color: #166534;
+            margin-bottom: 12px;
+        }
+        .word-preview-box {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .word-toc-item {
+            margin-left: 0;
+            margin-bottom: 4px;
+        }
+        .word-toc-item.level1 { font-weight: bold; margin-top: 8px; }
+        .word-toc-item.level2 { margin-left: 20px; }
+        .word-toc-item.level3 { margin-left: 40px; font-size: 0.9rem; }
+
+        /* ══════════════════════════════════════════════════
+           第二版新增样式 — 免责声明横幅
+           ══════════════════════════════════════════════════ */
+        .disclaimer-banner {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-bottom: 3px solid #f59e0b;
+            padding: 12px 0;
+            color: #78350f;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5); }
+        }
+        
+        .disclaimer-banner i {
+            animation: shake 2s ease-in-out infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+
+        /* ── 响应式 ── */
+        @media (max-width: 768px) {
+            .result-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .result-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ── Step 6 样式 ── */
+        .param-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .param-label {
+            font-size: 0.8rem;
+            color: #991b1b;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .param-value {
+            font-size: 1.2rem;
+            color: #dc2626;
+            font-weight: bold;
+        }
+        
+        .form-label-ship {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1a2a3a;
+            margin-bottom: 6px;
+        }
+        
+        .form-control-ship {
+            border: 1px solid #c8d8f0;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .form-control-ship:focus {
+            border-color: #2e7dd1;
+            box-shadow: 0 0 0 3px rgba(46, 125, 209, 0.1);
+        }
+        
+        .btn-calc {
+            background: #2e7dd1;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-calc:hover {
+            background: #1a4a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 74, 138, 0.3);
+        }
+        
+        .btn-calc:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* ══════════════════════════════════════════════════
+           页脚样式优化（第二版新增）
+           ══════════════════════════════════════════════════ */
+        .footer-ship {
+            background: linear-gradient(135deg, var(--blue-dark) 0%, #0f2d52 100%);
+            color: rgba(255,255,255,0.9);
+            padding: 16px 0;
+            text-align: center;
+            font-size: 0.85rem;
+            border-top: 3px solid var(--blue-mid);
+            box-shadow: 0 -4px 12px rgba(26, 74, 138, 0.3);
+            margin-top: 30px;
+        }
+        
+        .footer-ship a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+        }
+        
+        .footer-ship a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     免责声明横幅（第二版新增）
+     ══════════════════════════════════════════════════════════ -->
+<div class="disclaimer-banner">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center justify-content-center">
+            <i class="bi bi-exclamation-triangle-fill me-2" style="font-size: 1.1rem;"></i>
+            <span style="font-weight: 600; font-size: 0.95rem;">
+                本系统由歆编写，仅用于课程设计数据核对，切勿直接用于提交结果。使用者需自行验证计算结果的准确性。
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- ══ 顶部导航栏 ══════════════════════════════════════════ -->
+<nav class="navbar-ship">
+    <div class="container-fluid px-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div class="nav-main-title">
+                    <i class="bi bi-water me-2"></i>船舶静力学课程设计自动计算系统
+                </div>
+                <div class="nav-sub-title">
+                    武汉理工大学 · 船舶与海洋工程学院 · 计算依据：盛振邦《船舶原理》上册
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="nav-badge">梯形法</span>
+                <span class="nav-badge">阶段1 MVP</span>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- ══ 主体内容 ══════════════════════════════════════════ -->
+<div class="container-fluid px-4 mt-3">
+<div class="row g-3">
+
+<!-- ══ 左栏：输入区 ══════════════════════════════════════ -->
+<div class="col-lg-5 col-xl-4">
+
+    <!-- Step 1：基本参数 -->
+    <div class="card-ship">
+        <div class="card-header-ship">
+            <span class="step-num">1</span>
+            输入基本参数
+        </div>
+        <div class="card-body-ship">
+            <div class="mb-3">
+                <label class="form-label-ship">垂线间长 LBP（米）</label>
+                <input type="number" id="inputLBP" class="form-control form-control-ship"
+                       placeholder="例：100" step="0.1" min="1">
+                <div class="form-text text-muted" style="font-size:0.78rem">
+                    首垂线到尾垂线的距离
+                </div>
+            </div>
+            <div class="mb-2">
+                <label class="form-label-ship">设计吃水 d（米）</label>
+                <input type="number" id="inputDraft" class="form-control form-control-ship"
+                       placeholder="例：5.0" step="0.1" min="0.1">
+                <div class="form-text text-muted" style="font-size:0.78rem">
+                    设计满载吃水
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2：型值表输入（阶段2升级：支持 Excel 上传 + 手动输入两种方式） -->
+    <div class="card-ship">
+        <div class="card-header-ship">
+            <span class="step-num">2</span>
+            输入型值表
+            <span class="ms-auto text-muted fw-normal" style="font-size:0.75rem;">
+                支持 Excel 上传 / 手动输入
+            </span>
+        </div>
+        <div class="card-body-ship">
+
+            <!-- 坐标系说明 -->
+            <div class="coord-box mb-3">
+                <strong>📐 坐标系：</strong>
+                X轴沿船长，<strong>船首为正，船尾为负</strong>，中站 x=0；
+                y 为<strong>半宽</strong>（单侧）
+            </div>
+
+            <!-- ── 输入方式切换 Tab ── -->
+            <ul class="nav nav-tabs mb-3" id="inputModeTabs" style="font-size:0.85rem;">
+                <li class="nav-item">
+                    <button class="nav-link active" id="tab-excel"
+                            onclick="switchInputMode('excel')" type="button">
+                        <i class="bi bi-file-earmark-excel me-1 text-success"></i>Excel 上传
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="tab-manual"
+                            onclick="switchInputMode('manual')" type="button">
+                        <i class="bi bi-keyboard me-1"></i>手动输入
+                    </button>
+                </li>
+            </ul>
+
+            <!-- ── Excel 上传区域 ── -->
+            <div id="panel-excel">
+                <!-- 下载模板按钮 -->
+                <div class="d-flex gap-2 mb-2 flex-wrap">
+                    <a href="/download_template" class="btn-fill-example text-decoration-none">
+                        <i class="bi bi-download me-1"></i>下载示例模板
+                    </a>
+                    <a href="/download_template_blank" class="btn-fill-example text-decoration-none">
+                        <i class="bi bi-file-earmark me-1"></i>下载空白模板
+                    </a>
+                </div>
+
+                <!-- 拖拽上传区 -->
+                <div class="upload-drop-zone" id="dropZone"
+                     onclick="document.getElementById('excelFileInput').click()"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event)">
+                    <i class="bi bi-cloud-upload" style="font-size:2rem; color:var(--blue-mid);"></i>
+                    <div class="mt-1 fw-bold" style="color:var(--blue-dark); font-size:0.9rem;">
+                        点击选择 / 拖拽 Excel 文件
+                    </div>
+                    <div class="text-muted" style="font-size:0.78rem;">
+                        仅支持 .xlsx 格式 · 最大 10MB
+                    </div>
+                </div>
+                <input type="file" id="excelFileInput" accept=".xlsx"
+                       style="display:none" onchange="uploadExcel(this)">
+
+                <!-- 上传状态 -->
+                <div class="status-bar status-idle mt-2" id="uploadStatus">
+                    <i class="bi bi-info-circle"></i>
+                    <span>请先下载模板，填写后上传</span>
+                </div>
+
+                <!-- 校验报告（上传后显示） -->
+                <div id="validationReport" style="display:none;" class="mt-2"></div>
+            </div>
+
+            <!-- ── 手动输入区域（阶段1原有，完全保留） ── -->
+            <div id="panel-manual" style="display:none;">
+                <label class="form-label-ship">
+                    型值表输入
+                    <span class="text-muted fw-normal" style="font-size:0.78rem;">
+                        （每行一个站：x, y）
+                    </span>
+                </label>
+                <textarea id="offsetsInput" class="w-100"
+                          placeholder="格式：每行输入「站号x, 半宽y」，用逗号分隔
+例：
+-5, 0.000
+-4, 1.250
+-3, 3.800
+-2, 5.600
+-1, 6.800
+0,  7.200
+1,  6.800
+2,  5.600
+3,  3.800
+4,  1.250
+5,  0.000"></textarea>
+                <div class="d-flex gap-2 mt-2 flex-wrap">
+                    <button class="btn-fill-example" onclick="fillExample()">
+                        <i class="bi bi-lightning me-1"></i>填入示例数据
+                    </button>
+                    <button class="btn-fill-example" onclick="clearInput()">
+                        <i class="bi bi-trash me-1"></i>清空
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Step 3：执行计算（阶段1原有，保留） -->
+    <div class="card-ship">
+        <div class="card-header-ship">
+            <span class="step-num">3</span>
+            单吃水快速计算（阶段1）
+        </div>
+        <div class="card-body-ship">
+            <p class="text-muted mb-3" style="font-size:0.85rem">
+                计算方法：<strong>梯形法</strong>（Trapezoidal Rule）<br>
+                对应教材：盛振邦《船舶原理》上册 第2章
+            </p>
+            <button class="btn-calc w-100" onclick="runCalculate()" id="calcBtn">
+                <i class="bi bi-calculator me-2"></i>单吃水快速计算
+            </button>
+            <!-- 状态提示 -->
+            <div class="status-bar status-idle mt-2" id="calcStatus">
+                <i class="bi bi-info-circle"></i>
+                <span>等待输入数据...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-ship" style="border-color:#2e7dd1; border-width:2px;">
+        <div class="card-header-ship" style="background:linear-gradient(90deg,#e8f0fb,#d0e4f8);">
+            <span class="step-num" style="background:#1a4a8a;">4</span>
+            <span style="color:#1a4a8a; font-weight:bold;">多吃水全参数计算（阶段3）</span>
+            <span class="ms-auto badge" style="background:#1a4a8a; font-size:0.72rem;">14项参数</span>
+        </div>
+        <div class="card-body-ship">
+            <!-- 吃水范围设置 -->
+            <div class="row g-2 mb-2">
+                <div class="col-4">
+                    <label class="form-label-ship" style="font-size:0.8rem;">最小吃水(m)</label>
+                    <input type="number" id="dMin" class="form-control form-control-sm form-control-ship"
+                           placeholder="自动" step="0.1" min="0">
+                </div>
+                <div class="col-4">
+                    <label class="form-label-ship" style="font-size:0.8rem;">最大吃水(m)</label>
+                    <input type="number" id="dMax" class="form-control form-control-sm form-control-ship"
+                           placeholder="自动" step="0.1" min="0">
+                </div>
+                <div class="col-4">
+                    <label class="form-label-ship" style="font-size:0.8rem;">步长(m)</label>
+                    <input type="number" id="dStep" class="form-control form-control-sm form-control-ship"
+                           value="0.5" step="0.1" min="0.1">
+                </div>
+            </div>
+            <!-- 积分方法选择 -->
+            <div class="mb-2">
+                <label class="form-label-ship" style="font-size:0.8rem;">积分方法</label>
+                <select id="calcMethod" class="form-select form-select-sm form-control-ship">
+                    <option value="trapz" selected>梯形法（默认，推荐）</option>
+                    <option value="simpson">辛普森 1/3 法（可选）</option>
+                </select>
+            </div>
+            <button class="btn-calc w-100" onclick="runTableCalc()" id="tableCalcBtn"
+                    style="background:#1a4a8a;">
+                <i class="bi bi-table me-2"></i>生成完整静水力计算表
+            </button>
+            <div class="status-bar status-idle mt-2" id="tableCalcStatus">
+                <i class="bi bi-info-circle"></i>
+                <span>请先输入型值表数据</span>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /左栏 -->
+
+<!-- ══ 右栏：结果区 ══════════════════════════════════════ -->
+<div class="col-lg-7 col-xl-8">
+
+    <!-- 阶段2新增：型值表预览面板（Excel 上传后显示） -->
+    <div id="previewPanel" class="card-ship" style="display:none;">
+        <div class="card-header-ship">
+            <i class="bi bi-table me-1"></i>
+            型值表预览
+            <span class="badge ms-2" id="previewBadge"
+                  style="background:var(--blue-mid); font-size:0.75rem;"></span>
+            <span class="ms-auto">
+                <button class="btn-fill-example" onclick="confirmPreview()" id="confirmBtn">
+                    <i class="bi bi-check-circle me-1 text-success"></i>确认使用此数据
+                </button>
+            </span>
+        </div>
+        <div class="card-body-ship p-0">
+            <!-- 水线选择（Excel 上传后有多条水线，需选择设计吃水对应的水线） -->
+            <div class="px-3 pt-3 pb-2" id="wlSelectArea">
+                <label class="form-label-ship">
+                    选择设计吃水对应的水线
+                    <span class="text-muted fw-normal" style="font-size:0.78rem;">
+                        （选择后自动填入设计吃水值）
+                    </span>
+                </label>
+                <select id="wlSelect" class="form-select form-select-sm"
+                        style="max-width:200px; font-size:0.85rem;"
+                        onchange="onWaterlineSelect()">
+                </select>
+            </div>
+            <!-- 型值表数据表格 -->
+            <div class="table-responsive" style="max-height:280px; overflow-y:auto;">
+                <table class="table table-bordered table-sm preview-table mb-0" id="previewTable">
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 欢迎提示（未计算时显示） -->
+    <div id="welcomePanel" class="card-ship">
+        <div class="card-body-ship text-center py-5">
+            <i class="bi bi-water" style="font-size:4rem; color:var(--blue-mid); opacity:0.3;"></i>
+            <h5 class="mt-3 text-muted">请在左侧输入参数并点击计算</h5>
+            <p class="text-muted small mt-2">
+                输入垂线间长、设计吃水、型值表数据，<br>
+                点击「一键计算」即可获得静水力要素
+            </p>
+            <div class="mt-3 p-3 rounded" style="background:var(--blue-light); display:inline-block; text-align:left;">
+                <div class="fw-bold text-primary mb-2" style="font-size:0.85rem">本阶段计算量：</div>
+                <div style="font-size:0.82rem; color:var(--text-mid);">
+                    ✓ 水线面积 Aw（m²）<br>
+                    ✓ 排水体积 ∇（m³）<br>
+                    ✓ 排水量 Δ（t）<br>
+                    ✓ 浮心纵向坐标 xb（m）<br>
+                    ✓ 每厘米吃水吨数 TPC（t/cm）<br>
+                    ✓ 方形系数 Cb
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 计算结果面板（计算成功后显示） -->
+    <div id="resultPanel" class="result-panel">
+
+        <!-- 结果数值卡片网格 -->
+        <div class="card-ship">
+            <div class="card-header-ship">
+                <i class="bi bi-clipboard-data me-1"></i>
+                静水力要素计算结果
+                <span class="ms-auto text-muted fw-normal" style="font-size:0.78rem">
+                    梯形法 · 盛振邦《船舶原理》上册
+                </span>
+            </div>
+            <div class="card-body-ship">
+                <div class="result-grid" id="resultGrid">
+                    <!-- 由 JS 动态填充 -->
+                </div>
+
+                <!-- 导出按钮 -->
+                <div class="d-flex gap-2 mt-2">
+                    <button class="btn-export" onclick="exportExcel()" id="exportBtn">
+                        <i class="bi bi-file-earmark-excel me-1"></i>导出 Excel 计算表
+                    </button>
+                    <span class="text-muted small align-self-center">
+                        符合课程设计格式要求
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 计算过程明细表 -->
+        <div class="card-ship">
+            <div class="card-header-ship">
+                <i class="bi bi-table me-1"></i>
+                计算过程明细（型值表 + 中间量）
+            </div>
+            <div class="card-body-ship p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm process-table mb-0" id="processTable">
+                        <thead>
+                            <tr>
+                                <th>站号 x<br>(m)</th>
+                                <th>半宽 y<br>(m)</th>
+                                <th>全宽 2y<br>(m)</th>
+                                <th>y·x<br>(m²)</th>
+                                <th>梯形面积贡献<br>ΔAw (m²)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="processBody">
+                        </tbody>
+                        <tfoot id="processFoot">
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 公式说明 -->
+        <div class="card-ship">
+            <div class="card-header-ship">
+                <i class="bi bi-journal-text me-1"></i>
+                计算公式说明（对应教材）
+            </div>
+            <div class="card-body-ship">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background:#f8faff; border:1px solid var(--blue-border); font-size:0.82rem;">
+                            <div class="fw-bold text-primary mb-2">① 水线面积 Aw</div>
+                            <div style="font-family:monospace;">Aw = 2 · ∫y dx</div>
+                            <div class="text-muted mt-1">梯形法：Σ(y_i + y_{i+1})/2 · Δx，再乘2</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background:#f8faff; border:1px solid var(--blue-border); font-size:0.82rem;">
+                            <div class="fw-bold text-primary mb-2">② 排水体积 ∇</div>
+                            <div style="font-family:monospace;">∇ = Aw · d</div>
+                            <div class="text-muted mt-1">阶段1简化：水线面积 × 设计吃水</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background:#f8faff; border:1px solid var(--blue-border); font-size:0.82rem;">
+                            <div class="fw-bold text-primary mb-2">③ 排水量 Δ</div>
+                            <div style="font-family:monospace;">Δ = ρ · ∇</div>
+                            <div class="text-muted mt-1">ρ = 1.025 t/m³（海水密度）</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background:#f8faff; border:1px solid var(--blue-border); font-size:0.82rem;">
+                            <div class="fw-bold text-primary mb-2">④ 浮心纵坐标 xb</div>
+                            <div style="font-family:monospace;">xb = (2·∫y·x dx) / Aw</div>
+                            <div class="text-muted mt-1">水线面积对中站的静矩 / 水线面积</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background:#f8faff; border:1px solid var(--blue-border); font-size:0.82rem;">
+                            <div class="fw-bold text-primary mb-2">⑤ 每厘米吃水吨数 TPC</div>
+                            <div style="font-family:monospace;">TPC = Aw · ρ / 100</div>
+                            <div class="text-muted mt-1">吃水增加1cm时排水量增量</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded" style="background:#f8faff; border:1px solid var(--blue-border); font-size:0.82rem;">
+                            <div class="fw-bold text-primary mb-2">⑥ 方形系数 Cb</div>
+                            <div style="font-family:monospace;">Cb = ∇ / (L · B · d)</div>
+                            <div class="text-muted mt-1">船体体积与外包长方体之比</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /resultPanel -->
+
+
+    <!-- Step 5：曲线绘制（阶段4新增） -->
+    <div class="card-ship" style="border-color:#7c3aed; border-width:2px;">
+        <div class="card-header-ship" style="background:linear-gradient(90deg,#f3f0ff,#e9e3ff);">
+            <span class="step-num" style="background:#7c3aed;">5</span>
+            <span style="color:#5b21b6; font-weight:bold;">曲线绘制（阶段4）</span>
+            <span class="ms-auto badge" style="background:#7c3aed; font-size:0.72rem;">A3/300DPI</span>
+        </div>
+        <div class="card-body-ship">
+            <div class="mb-2">
+                <label class="form-label-ship" style="font-size:0.8rem;">船名（可选，用于图标题）</label>
+                <input type="text" id="shipName" class="form-control form-control-sm form-control-ship"
+                       placeholder="例：某型货船">
+            </div>
+            <!-- 操作按钮组 -->
+            <div class="d-flex flex-column gap-2">
+                <button class="btn-calc w-100" onclick="runBonjean()" id="bonjeanBtn"
+                        style="background:#7c3aed;">
+                    <i class="bi bi-graph-up me-2"></i>计算邦戎曲线
+                </button>
+                <button class="btn-calc w-100" onclick="previewHydro()" id="previewHydroBtn"
+                        style="background:#5b21b6;" disabled>
+                    <i class="bi bi-image me-2"></i>预览静水力曲线
+                </button>
+                <button class="btn-calc w-100" onclick="previewBonjeanPlot()" id="previewBonjeanBtn"
+                        style="background:#5b21b6;" disabled>
+                    <i class="bi bi-image me-2"></i>预览邦戎曲线
+                </button>
+                <button class="btn-export w-100" onclick="exportPlots()" id="exportPlotsBtn"
+                        style="background:#059669; border-color:#059669;" disabled>
+                    <i class="bi bi-file-zip me-2"></i>导出高清曲线图（PNG+SVG）
+                </button>
+            </div>
+            <div class="status-bar status-idle mt-2" id="plotStatus">
+                <i class="bi bi-info-circle"></i>
+                <span>请先完成多吃水计算（Step 4）</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ 阶段3新增：多吃水静水力计算表面板 ══ -->
+    <div id="tablePanel" style="display:none;">
+
+        <!-- 操作栏 -->
+        <div class="card-ship">
+            <div class="card-header-ship" style="background:linear-gradient(90deg,#e8f0fb,#d0e4f8);">
+                <i class="bi bi-table me-1" style="color:#1a4a8a;"></i>
+                <span style="color:#1a4a8a; font-weight:bold;">完整静水力计算表</span>
+                <span class="badge ms-2" id="tableBadge" style="background:#1a4a8a; font-size:0.72rem;"></span>
+                <div class="ms-auto d-flex gap-2">
+                    <button class="btn-export" onclick="exportHydrostatics()" id="exportTableBtn"
+                            style="padding:6px 16px; font-size:0.82rem;">
+                        <i class="bi bi-file-earmark-excel me-1"></i>导出 Excel
+                    </button>
+                </div>
+            </div>
+            <div class="card-body-ship p-0">
+                <!-- 参数筛选（显示/隐藏列） -->
+                <div class="px-3 pt-2 pb-1" style="background:#f8faff; border-bottom:1px solid var(--blue-border);">
+                    <span style="font-size:0.78rem; color:var(--text-mid);">
+                        <i class="bi bi-funnel me-1"></i>显示列：
+                    </span>
+                    <div class="d-inline-flex flex-wrap gap-1 ms-1" id="colToggles"></div>
+                </div>
+                <!-- 表格 -->
+                <div class="table-responsive" style="max-height:480px; overflow:auto;">
+                    <table class="table table-bordered table-sm mb-0" id="hydroTable"
+                           style="font-size:0.78rem; font-family:'Courier New',monospace; white-space:nowrap;">
+                        <thead id="hydroThead"></thead>
+                        <tbody id="hydroTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 公式说明卡片 -->
+        <div class="card-ship">
+            <div class="card-header-ship">
+                <i class="bi bi-journal-text me-1"></i>
+                14项静水力参数公式说明（盛振邦《船舶原理》上册）
+                <button class="btn-fill-example ms-auto" onclick="toggleFormulas()">
+                    <i class="bi bi-chevron-down" id="formulaChevron"></i> 展开/收起
+                </button>
+            </div>
+            <div id="formulaPanel" style="display:none;">
+                <div class="card-body-ship">
+                    <div class="row g-2" id="formulaGrid"></div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /tablePanel -->
+
+    <!-- ══ 阶段4新增：曲线预览面板 ══ -->
+    <div id="plotPanel" style="display:none;">
+        <div class="card-ship">
+            <div class="card-header-ship" style="background:linear-gradient(90deg,#f3f0ff,#e9e3ff);">
+                <i class="bi bi-graph-up me-1" style="color:#7c3aed;"></i>
+                <span style="color:#5b21b6; font-weight:bold;">曲线预览</span>
+                <div class="ms-auto d-flex gap-2">
+                    <button class="btn-fill-example" onclick="showPlot('hydro')" id="tabHydro"
+                            style="border-color:#7c3aed; color:#7c3aed;">静水力曲线</button>
+                    <button class="btn-fill-example" onclick="showPlot('bonjean')" id="tabBonjean"
+                            style="border-color:#7c3aed; color:#7c3aed;">邦戎曲线</button>
+                </div>
+            </div>
+            <div class="card-body-ship p-2">
+                <!-- 预览图容器 -->
+                <div id="plotImgContainer" style="text-align:center; min-height:200px;">
+                    <div id="plotLoading" style="display:none; padding:40px; color:#7c3aed;">
+                        <div class="spinner-border spinner-border-sm me-2"></div>
+                        正在生成曲线图，请稍候...
+                    </div>
+                    <img id="plotImg" src="" alt="曲线预览"
+                         style="max-width:100%; border-radius:6px; display:none;
+                                border:1px solid #e9e3ff; cursor:zoom-in;"
+                         onclick="zoomPlot(this)">
+                    <div id="plotEmpty" style="padding:40px; color:#aaa; font-size:0.85rem;">
+                        <i class="bi bi-image" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+                        点击左侧「预览静水力曲线」或「预览邦戎曲线」生成预览图
+                    </div>
+                </div>
+                <!-- 放大查看提示 -->
+                <div style="font-size:0.72rem; color:#aaa; text-align:center; margin-top:4px;">
+                    点击图片可放大查看 · 导出高清图请使用「导出高清曲线图」按钮
+                </div>
+            </div>
+        </div>
+
+        <!-- 邦戎曲线数据表 -->
+        <div class="card-ship" id="bonjeanTableCard" style="display:none;">
+            <div class="card-header-ship" style="background:linear-gradient(90deg,#f3f0ff,#e9e3ff);">
+                <i class="bi bi-table me-1" style="color:#7c3aed;"></i>
+                <span style="color:#5b21b6; font-weight:bold;">邦戎曲线数据表</span>
+                <span class="badge ms-2" id="bonjeanBadge" style="background:#7c3aed; font-size:0.72rem;"></span>
+            </div>
+            <div class="card-body-ship p-0">
+                <div class="table-responsive" style="max-height:320px; overflow:auto;">
+                    <table class="table table-bordered table-sm mb-0" id="bonjeanTable"
+                           style="font-size:0.75rem; font-family:'Courier New',monospace; white-space:nowrap;">
+                        <thead id="bonjeanThead"></thead>
+                        <tbody id="bonjeanTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div><!-- /plotPanel -->
+
+    <!-- 图片放大模态框 -->
+    <div id="plotModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+         background:rgba(0,0,0,0.85); z-index:9999; cursor:zoom-out; overflow:auto;"
+         onclick="closePlotModal()">
+        <img id="plotModalImg" src="" alt=""
+             style="max-width:95%; max-height:95%; margin:2.5% auto; display:block;
+                    border-radius:8px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    </div>
+
+</div><!-- /右栏 -->
+</div><!-- /row -->
+
+<!-- ══════════════════════════════════════════════════════════
+     Step 6：装载工况稳性校核与规范判定（阶段6新增）
+     ══════════════════════════════════════════════════════════ -->
+<div class="container mt-4">
+    <div class="card-ship" style="border-color:#dc2626; border-width:2px;">
+        <div class="card-header-ship" style="background:linear-gradient(90deg,#fee2e2,#fecaca);">
+            <span class="step-num" style="background:#dc2626;">6</span>
+            <span style="color:#991b1b; font-weight:bold;">装载工况稳性校核与规范判定（阶段6）</span>
+            <span class="ms-auto badge" style="background:#dc2626; font-size:0.72rem;">《国内航行海船法定检验技术规则》</span>
+        </div>
+        <div class="card-body-ship">
+            
+            <!-- 6.1 工况选择与参数显示 -->
+            <div class="mb-4">
+                <h6 style="color:#991b1b; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-list-check"></i> 装载工况选择
+                </h6>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label-ship">选择工况</label>
+                        <select id="loadingConditionSelect" class="form-control form-control-ship" 
+                                onchange="loadConditionDetails(this.value)">
+                            <option>满载出港</option>
+                            <option>满载到港</option>
+                            <option>压载出港</option>
+                            <option>压载到港</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-ship">工况描述</label>
+                        <input type="text" class="form-control form-control-ship" readonly 
+                               id="conditionDescription" placeholder="工况描述">
+                    </div>
+                </div>
+                
+                <!-- 工况参数显示 -->
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="param-box">
+                            <div class="param-label">总重量 Δ</div>
+                            <div class="param-value"><span id="lcTotalWeight">-</span> t</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="param-box">
+                            <div class="param-label">重心纵向 Xg</div>
+                            <div class="param-value"><span id="lcXg">-</span> m</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="param-box">
+                            <div class="param-label">重心横向 Yg</div>
+                            <div class="param-value"><span id="lcYg">-</span> m</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="param-box">
+                            <div class="param-label">重心垂向 Zg</div>
+                            <div class="param-value"><span id="lcZg">-</span> m</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 6.2 舱室装载表 -->
+            <div class="mb-4">
+                <h6 style="color:#991b1b; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-box"></i> 舱室装载情况
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead style="background:#fee2e2;">
+                            <tr>
+                                <th>舱室名称</th>
+                                <th>装载重量 (t)</th>
+                                <th>装载比 (%)</th>
+                                <th>重心纵向 Xg (m)</th>
+                                <th>重心垂向 Zg (m)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compartmentTableBody">
+                            <tr><td colspan="5" class="text-center text-muted">选择工况后显示</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 6.3 计算按钮 -->
+            <div class="mb-4">
+                <div class="d-flex gap-2">
+                    <button class="btn-calc flex-grow-1" onclick="analyzeLoadingCondition()" id="analyzeBtn"
+                            style="background:#dc2626;">
+                        <i class="bi bi-play-circle me-2"></i>分析当前工况
+                    </button>
+                    <button class="btn-calc flex-grow-1" onclick="analyzeAllLoadingConditions()" id="analyzeAllBtn"
+                            style="background:#991b1b;">
+                        <i class="bi bi-play-circle me-2"></i>分析全部 4 种工况
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 状态栏 -->
+            <div id="loadingConditionStatus" class="status-bar status-idle" style="margin-bottom:16px;">
+                <i class="bi bi-info-circle"></i><span>等待分析...</span>
+            </div>
+            
+            <!-- 6.4 浮态计算结果 -->
+            <div id="floatingStatePanel" style="display:none; margin-bottom:20px;">
+                <h6 style="color:#991b1b; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-water"></i> 浮态计算结果
+                </h6>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="param-box">
+                            <div class="param-label">平均吃水</div>
+                            <div class="param-value"><span id="draftMean">-</span> m</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="param-box">
+                            <div class="param-label">首吃水</div>
+                            <div class="param-value"><span id="draftFwd">-</span> m</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="param-box">
+                            <div class="param-label">尾吃水</div>
+                            <div class="param-value"><span id="draftAft">-</span> m</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="param-box">
+                            <div class="param-label">纵倾</div>
+                            <div class="param-value"><span id="trim">-</span> m</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 6.5 稳性指标 -->
+            <div id="stabilityIndicatorsPanel" style="display:none; margin-bottom:20px;">
+                <h6 style="color:#991b1b; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-graph-up"></i> 稳性指标
+                </h6>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="param-box">
+                            <div class="param-label">GM (m)</div>
+                            <div class="param-value"><span id="gm">-</span></div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="param-box">
+                            <div class="param-label">GZ_max (m)</div>
+                            <div class="param-value"><span id="gzMax">-</span></div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="param-box">
+                            <div class="param-label">θ_max_gz (°)</div>
+                            <div class="param-value"><span id="thetaMaxGz">-</span></div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="param-box">
+                            <div class="param-label">θ_vanish (°)</div>
+                            <div class="param-value"><span id="thetaVanish">-</span></div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="param-box">
+                            <div class="param-label">K 值</div>
+                            <div class="param-value"><span id="kValue">-</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 6.6 规范判定结果 -->
+            <div id="judgmentPanel" style="display:none; margin-bottom:20px;">
+                <h6 style="color:#991b1b; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-check-circle"></i> 规范判定结果（《国内航行海船法定检验技术规则》）
+                </h6>
+                
+                <!-- 总体结论 -->
+                <div id="judgmentConclusion" class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle"></i> 等待判定...
+                </div>
+                
+                <!-- 详细衡准项 -->
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead style="background:#fee2e2;">
+                            <tr>
+                                <th>衡准项</th>
+                                <th>计算值</th>
+                                <th>单位</th>
+                                <th>规范要求</th>
+                                <th>判定结果</th>
+                                <th>规范条款</th>
+                            </tr>
+                        </thead>
+                        <tbody id="judgmentTableBody">
+                            <tr><td colspan="6" class="text-center text-muted">等待分析...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 6.7 GZ 曲线预览 -->
+            <div id="gzPreviewPanel" style="display:none; margin-bottom:20px;">
+                <h6 style="color:#991b1b; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-graph-up"></i> 静稳性曲线预览
+                </h6>
+                <div style="background:#fff; border:1px solid #fee2e2; border-radius:4px; padding:12px;">
+                    <canvas id="gzPreviewCanvas" width="800" height="400" style="max-width:100%; height:auto;"></canvas>
+                </div>
+            </div>
+            
+            <!-- 6.8 全工况总结 -->
+            <div id="allConditionsSummaryPanel" style="display:none; margin-bottom:20px;">
+                <h6 style="color:#991b1b; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-table"></i> 全工况稳性校核总结
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead style="background:#fee2e2;">
+                            <tr>
+                                <th>工况名称</th>
+                                <th>判定结果</th>
+                                <th>GM (m)</th>
+                                <th>GZ_max (m)</th>
+                                <th>θ_max_gz (°)</th>
+                                <th>θ_vanish (°)</th>
+                                <th>不满足项</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allConditionsSummaryBody">
+                            <tr><td colspan="7" class="text-center text-muted">等待分析...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 6.9 导出功能 -->
+            <div style="margin-top:20px; padding-top:20px; border-top:1px solid #fee2e2;">
+                <h6 style="color:#991b1b; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-download"></i> 导出功能
+                </h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button class="btn btn-sm btn-outline-danger" onclick="exportStabilityReport()">
+                        <i class="bi bi-file-earmark-excel"></i> 导出当前工况 Excel
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="exportAllConditionsReport()">
+                        <i class="bi bi-file-earmark-excel"></i> 导出全工况 Excel
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="exportGzCurve()">
+                        <i class="bi bi-image"></i> 导出 GZ 曲线 PNG
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Step 7：课程设计 Word 说明书自动生成（阶段7新增）
+     ══════════════════════════════════════════════════════════ -->
+<div class="container mt-4">
+    <div class="card-ship" style="border-color:#16a34a; border-width:2px;">
+        <div class="card-header-ship" style="background:linear-gradient(90deg,#dcfce7,#bbf7d0);">
+            <span class="step-num" style="background:#16a34a;">7</span>
+            <span style="color:#166534; font-weight:bold;">课程设计 Word 说明书自动生成（阶段7）</span>
+            <span class="ms-auto badge" style="background:#16a34a; font-size:0.72rem;">python-docx</span>
+        </div>
+        <div class="card-body-ship">
+            
+            <!-- 7.1 学生信息 -->
+            <div class="mb-4">
+                <h6 style="color:#166534; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-person-badge"></i> 学生信息
+                </h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label-ship">班级</label>
+                        <input type="text" class="form-control form-control-ship" id="wordClassName" 
+                               placeholder="如：船舶2020班" value="船舶2020班">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-ship">姓名</label>
+                        <input type="text" class="form-control form-control-ship" id="wordStudentName" 
+                               placeholder="学生姓名" value="张三">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-ship">学号</label>
+                        <input type="text" class="form-control form-control-ship" id="wordStudentId" 
+                               placeholder="学号" value="202012345">
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label-ship">指导教师</label>
+                        <input type="text" class="form-control form-control-ship" id="wordInstructor" 
+                               placeholder="指导教师姓名" value="李教授">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 7.2 船舶基本信息 -->
+            <div class="mb-4">
+                <h6 style="color:#166534; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-speedometer2"></i> 船舶基本信息
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label-ship">船舶名称</label>
+                        <input type="text" class="form-control form-control-ship" id="wordShipName" 
+                               placeholder="如：3000DWT沿海散货船" value="3000DWT沿海散货船">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-ship">船舶类型</label>
+                        <select class="form-control form-control-ship" id="wordShipType">
+                            <option value="沿海散货船" selected>沿海散货船</option>
+                            <option value="沿海集装箱船">沿海集装箱船</option>
+                            <option value="沿海油船">沿海油船</option>
+                            <option value="沿海客船">沿海客船</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 7.3 图片选择 -->
+            <div class="mb-4">
+                <h6 style="color:#166534; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-image"></i> 插入图片
+                </h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeHydrostaticsImg" checked>
+                            <label class="form-check-label" for="includeHydrostaticsImg">
+                                静水力曲线图
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeBonjeanImg" checked>
+                            <label class="form-check-label" for="includeBonjeanImg">
+                                邦戎曲线图
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeGzImg" checked>
+                            <label class="form-check-label" for="includeGzImg">
+                                GZ 曲线图
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info mt-2" style="font-size:0.85rem; padding:8px 12px;">
+                    <i class="bi bi-info-circle me-1"></i>
+                    图片将自动从已生成的曲线图中读取，请先在阶段4-6中生成相应的曲线图。
+                </div>
+            </div>
+            
+            <!-- 7.4 生成按钮 -->
+            <div class="mb-4">
+                <button class="btn-calc" onclick="generateWordReport()" id="generateWordBtn"
+                        style="background:#16a34a; width:100%;">
+                    <i class="bi bi-file-earmark-word me-2"></i>生成完整 Word 说明书
+                </button>
+            </div>
+            
+            <!-- 状态栏 -->
+            <div id="wordReportStatus" class="status-bar status-idle" style="margin-bottom:16px;">
+                <i class="bi bi-info-circle"></i><span>等待生成...</span>
+            </div>
+            
+            <!-- 7.5 说明书预览 -->
+            <div id="wordPreviewPanel" style="display:none;">
+                <h6 style="color:#166534; font-weight:bold; margin-bottom:12px;">
+                    <i class="bi bi-eye"></i> 说明书内容预览
+                </h6>
+                <div class="alert alert-success" style="font-size:0.9rem;">
+                    <h6 style="color:#166534; font-weight:bold; margin-bottom:8px;">
+                        <i class="bi bi-check-circle me-1"></i>Word 说明书已生成！
+                    </h6>
+                    <div id="wordPreviewContent" style="font-size:0.85rem; line-height:1.6;">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-success" onclick="downloadWordReport()">
+                        <i class="bi bi-download me-1"></i>下载 Word 文件
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="hideWordPreview()">
+                        <i class="bi bi-x-circle me-1"></i>关闭预览
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ══ 页脚 ══════════════════════════════════════════════ -->
+<div class="footer-ship">
+    <div style="margin-bottom:8px;">
+        船舶静力学课程设计自动计算系统 v2.0&nbsp;|&nbsp;
+        武汉理工大学 船舶与海洋工程学院&nbsp;|&nbsp;
+        计算依据：盛振邦《船舶原理》上册&nbsp;|&nbsp;
+        《国内航行海船法定检验技术规则》
+    </div>
+    <div style="color:#f59e0b; font-weight:bold; font-size:0.85rem; border-top:1px solid rgba(255,255,255,0.2); padding-top:8px; margin-top:8px;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>免责声明：</strong>本网站由歆编写，仅用于课程设计数据核对，切勿直接用于提交结果。请同学们在理解原理的基础上，独立完成计算和报告。
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ============================================================
+// 前端交互逻辑
+// ============================================================
+
+// 全局变量：保存最近一次计算结果，供导出使用
+let lastResult = null;
+let lastStations = [];
+let lastHalfBreadths = [];
+
+// ── 示例数据（某教学船，L=100m，11站，设计吃水5m）──────────
+const EXAMPLE_DATA = {
+    lbp:   "100",
+    draft: "5.0",
+    offsets: `-5, 0.000
+-4, 1.850
+-3, 4.620
+-2, 6.480
+-1, 7.350
+0,  7.600
+1,  7.350
+2,  6.480
+3,  4.620
+4,  1.850
+5,  0.000`
+};
+
+/**
+ * 填入示例数据
+ * 方便用户快速测试，不需要手动输入
+ */
+function fillExample() {
+    document.getElementById("inputLBP").value   = EXAMPLE_DATA.lbp;
+    document.getElementById("inputDraft").value = EXAMPLE_DATA.draft;
+    document.getElementById("offsetsInput").value = EXAMPLE_DATA.offsets;
+    setStatus("success", "已填入示例数据（某教学船，L=100m，11站，d=5m），可直接点击计算");
+}
+
+/**
+ * 清空所有输入
+ */
+function clearInput() {
+    document.getElementById("inputLBP").value = "";
+    document.getElementById("inputDraft").value = "";
+    document.getElementById("offsetsInput").value = "";
+    setStatus("idle", "已清空，等待输入...");
+    hideResult();
+}
+
+/**
+ * 解析型值表文本输入
+ * 格式：每行 "x, y"，支持空行和注释行（#开头）
+ * 
+ * @param {string} text - 用户输入的文本
+ * @returns {{ stations: number[], halfBreadths: number[] }}
+ */
+function parseOffsets(text) {
+    const stations = [];
+    const halfBreadths = [];
+    const lines = text.trim().split("\n");
+    
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // 跳过空行和注释行
+        if (!line || line.startsWith("#")) continue;
+        
+        // 分割：支持逗号、制表符、多个空格
+        const parts = line.split(/[,\t]+/).map(s => s.trim()).filter(s => s !== "");
+        
+        if (parts.length < 2) {
+            throw new Error(`第${i+1}行格式错误："${line}"，应为 "x, y" 格式`);
+        }
+        
+        const x = parseFloat(parts[0]);
+        const y = parseFloat(parts[1]);
+        
+        if (isNaN(x) || isNaN(y)) {
+            throw new Error(`第${i+1}行包含非数字："${line}"`);
+        }
+        if (y < 0) {
+            throw new Error(`第${i+1}行半宽为负值(${y})，物理上不合理`);
+        }
+        
+        stations.push(x);
+        halfBreadths.push(y);
+    }
+    
+    if (stations.length < 3) {
+        throw new Error(`至少需要3个站，当前只有 ${stations.length} 个`);
+    }
+    
+    return { stations, halfBreadths };
+}
+
+/**
+ * 执行计算
+ * 读取输入 → 解析型值表 → 调用后端 /calculate → 展示结果
+ */
+function runCalculate() {
+    const btn = document.getElementById("calcBtn");
+    
+    // ── 读取输入 ──────────────────────────────────────────
+    const draft = parseFloat(document.getElementById("inputDraft").value);
+    const offsetsText = document.getElementById("offsetsInput").value;
+    
+    // 基本校验
+    if (!offsetsText.trim()) {
+        setStatus("error", "请先输入型值表数据");
+        return;
+    }
+    if (isNaN(draft) || draft <= 0) {
+        setStatus("error", "请输入有效的设计吃水（正数）");
+        return;
+    }
+    
+    // ── 解析型值表 ────────────────────────────────────────
+    let parsed;
+    try {
+        parsed = parseOffsets(offsetsText);
+    } catch (e) {
+        setStatus("error", "型值表解析失败：" + e.message);
+        return;
+    }
+    
+    // ── 发送计算请求 ──────────────────────────────────────
+    btn.innerHTML = '<span class="spinner-inline"></span>计算中...';
+    btn.disabled = true;
+    setStatus("loading", "正在执行梯形法积分计算...");
+    
+    fetch("/calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            draft:         draft,
+            stations:      parsed.stations,
+            half_breadths: parsed.halfBreadths
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        btn.innerHTML = '<i class="bi bi-calculator me-2"></i>一键计算静水力要素';
+        btn.disabled = false;
+        
+        if (res.success) {
+            setStatus("success",
+                `✓ 计算完成！排水量 Δ = ${res.result.delta} t，水线面积 Aw = ${res.result.Aw} m²`);
+            
+            // 保存结果供导出使用
+            lastResult = res.result;
+            lastStations = parsed.stations;
+            lastHalfBreadths = parsed.halfBreadths;
+            
+            // 渲染结果
+            renderResult(res.result, parsed.stations, parsed.halfBreadths);
+        } else {
+            setStatus("error", "✗ 计算失败：" + res.msg);
+        }
+    })
+    .catch(err => {
+        btn.innerHTML = '<i class="bi bi-calculator me-2"></i>一键计算静水力要素';
+        btn.disabled = false;
+        setStatus("error", "✗ 网络错误：" + err.message);
+    });
+}
+
+/**
+ * 渲染计算结果
+ * @param {Object} result - 后端返回的计算结果
+ * @param {number[]} stations - 各站 x 坐标
+ * @param {number[]} halfBreadths - 各站半宽
+ */
+function renderResult(result, stations, halfBreadths) {
+    // 显示结果面板，隐藏欢迎面板
+    document.getElementById("welcomePanel").style.display = "none";
+    document.getElementById("resultPanel").style.display = "block";
+    
+    // ── 渲染数值卡片 ──────────────────────────────────────
+    const grid = document.getElementById("resultGrid");
+    grid.innerHTML = `
+        <div class="result-item highlight">
+            <div class="r-label">排水量</div>
+            <div class="r-symbol">Δ</div>
+            <div class="r-value">${result.delta.toFixed(2)}</div>
+            <div class="r-unit">t</div>
+        </div>
+        <div class="result-item highlight">
+            <div class="r-label">排水体积</div>
+            <div class="r-symbol">∇</div>
+            <div class="r-value">${result.V.toFixed(2)}</div>
+            <div class="r-unit">m³</div>
+        </div>
+        <div class="result-item">
+            <div class="r-label">水线面积</div>
+            <div class="r-symbol">Aw</div>
+            <div class="r-value">${result.Aw.toFixed(3)}</div>
+            <div class="r-unit">m²</div>
+        </div>
+        <div class="result-item">
+            <div class="r-label">浮心纵坐标</div>
+            <div class="r-symbol">xb</div>
+            <div class="r-value">${result.xb.toFixed(4)}</div>
+            <div class="r-unit">m（正为船首方向）</div>
+        </div>
+        <div class="result-item">
+            <div class="r-label">每厘米吃水吨数</div>
+            <div class="r-symbol">TPC</div>
+            <div class="r-value">${result.TPC.toFixed(3)}</div>
+            <div class="r-unit">t/cm</div>
+        </div>
+        <div class="result-item">
+            <div class="r-label">方形系数</div>
+            <div class="r-symbol">Cb</div>
+            <div class="r-value">${result.Cb.toFixed(4)}</div>
+            <div class="r-unit">无量纲（0~1）</div>
+        </div>
+    `;
+    
+    // ── 渲染计算过程明细表 ────────────────────────────────
+    const tbody = document.getElementById("processBody");
+    const tfoot = document.getElementById("processFoot");
+    let rows = "";
+    
+    // 计算每个梯形的面积贡献（用于展示计算过程）
+    for (let i = 0; i < stations.length; i++) {
+        const x = stations[i];
+        const y = halfBreadths[i];
+        
+        // 梯形面积贡献（与相邻站的梯形面积，单侧）
+        let trapArea = 0;
+        if (i > 0) {
+            const dx = stations[i] - stations[i-1];
+            trapArea = (halfBreadths[i-1] + y) / 2 * dx;
+        }
+        
+        rows += `<tr>
+            <td>${x.toFixed(3)}</td>
+            <td>${y.toFixed(3)}</td>
+            <td>${(2*y).toFixed(3)}</td>
+            <td>${(y*x).toFixed(4)}</td>
+            <td>${i === 0 ? "—" : (2*trapArea).toFixed(4)}</td>
+        </tr>`;
+    }
+    tbody.innerHTML = rows;
+    
+    // 汇总行
+    tfoot.innerHTML = `
+        <tr style="background:var(--blue-dark); color:#fff; font-weight:bold;">
+            <td colspan="2">合计</td>
+            <td>—</td>
+            <td>—</td>
+            <td>Aw = ${result.Aw.toFixed(4)} m²</td>
+        </tr>
+    `;
+}
+
+/**
+ * 导出 Excel
+ * 将当前计算结果发送到后端，下载生成的 Excel 文件
+ */
+function exportExcel() {
+    if (!lastResult) {
+        alert("请先执行计算");
+        return;
+    }
+    
+    const btn = document.getElementById("exportBtn");
+    btn.innerHTML = '<span class="spinner-inline"></span>生成中...';
+    btn.disabled = true;
+    
+    fetch("/export_excel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            result:        lastResult,
+            stations:      lastStations,
+            half_breadths: lastHalfBreadths
+        })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("服务器返回错误");
+        return res.blob();
+    })
+    .then(blob => {
+        // 触发浏览器下载
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "静水力计算.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        btn.innerHTML = '<i class="bi bi-file-earmark-excel me-1"></i>导出 Excel 计算表';
+        btn.disabled = false;
+        setStatus("success", "✓ Excel 已导出，请查看下载文件夹");
+    })
+    .catch(err => {
+        btn.innerHTML = '<i class="bi bi-file-earmark-excel me-1"></i>导出 Excel 计算表';
+        btn.disabled = false;
+        setStatus("error", "✗ 导出失败：" + err.message);
+    });
+}
+
+/**
+ * 隐藏结果面板，显示欢迎面板
+ */
+function hideResult() {
+    document.getElementById("welcomePanel").style.display = "block";
+    document.getElementById("resultPanel").style.display = "none";
+    lastResult = null;
+}
+
+/**
+ * 设置状态栏
+ * @param {string} type  - "idle" | "loading" | "success" | "error"
+ * @param {string} msg   - 显示文字
+ */
+function setStatus(type, msg) {
+    const el = document.getElementById("calcStatus");
+    const iconMap = {
+        idle:    "bi-info-circle",
+        loading: "bi-hourglass-split",
+        success: "bi-check-circle-fill",
+        error:   "bi-exclamation-triangle-fill"
+    };
+    el.className = `status-bar status-${type}`;
+    el.innerHTML = `<i class="bi ${iconMap[type] || 'bi-info-circle'}"></i><span>${msg}</span>`;
+}
+
+// ============================================================
+// 阶段2 新增：Excel 上传、校验报告、型值表预览
+// ============================================================
+
+// 全局变量：保存从 Excel 解析的完整型值表数据
+let excelOffsetData = null;   // parse_offsets_excel 返回的完整数据
+let selectedWlIdx   = 0;      // 当前选中的水线索引
+
+/**
+ * 切换输入模式（Excel 上传 / 手动输入）
+ * @param {string} mode - "excel" 或 "manual"
+ */
+function switchInputMode(mode) {
+    document.getElementById("panel-excel").style.display  = mode === "excel"  ? "block" : "none";
+    document.getElementById("panel-manual").style.display = mode === "manual" ? "block" : "none";
+
+    document.getElementById("tab-excel").classList.toggle("active",  mode === "excel");
+    document.getElementById("tab-manual").classList.toggle("active", mode === "manual");
+}
+
+/**
+ * 处理拖拽悬停
+ */
+function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById("dropZone").classList.add("drag-over");
+}
+
+/**
+ * 处理拖拽离开
+ */
+function handleDragLeave(e) {
+    document.getElementById("dropZone").classList.remove("drag-over");
+}
+
+/**
+ * 处理文件拖拽放下
+ */
+function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById("dropZone").classList.remove("drag-over");
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        doUploadExcel(files[0]);
+    }
+}
+
+/**
+ * 文件选择框触发上传
+ */
+function uploadExcel(input) {
+    if (input.files.length > 0) {
+        doUploadExcel(input.files[0]);
+    }
+}
+
+/**
+ * 执行 Excel 上传与解析
+ * 调用后端 /upload_offsets，成功后展示校验报告和型值表预览
+ * @param {File} file - 用户选择的 Excel 文件
+ */
+function doUploadExcel(file) {
+    // 检查文件格式
+    if (!file.name.toLowerCase().endsWith(".xlsx")) {
+        setUploadStatus("error", "仅支持 .xlsx 格式，请另存为 xlsx 后上传");
+        return;
+    }
+
+    setUploadStatus("loading", "正在解析：" + file.name + " ...");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    fetch("/upload_offsets", {
+        method: "POST",
+        body: formData
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            excelOffsetData = res.data;
+            const d = res.data;
+
+            setUploadStatus("success",
+                "解析成功：" + d.n_stations + " 站 x " + d.n_waterlines + " 条水线，船长 L = " + d.L + " m");
+
+            // 渲染校验报告
+            renderValidationReport(d.validation);
+
+            // 渲染型值表预览
+            renderPreviewTable(d);
+
+            // 显示预览面板
+            document.getElementById("previewPanel").style.display = "block";
+            document.getElementById("welcomePanel").style.display = "none";
+
+        } else {
+            setUploadStatus("error", "解析失败：" + res.msg);
+            document.getElementById("validationReport").style.display = "none";
+        }
+    })
+    .catch(err => {
+        setUploadStatus("error", "网络错误：" + err.message);
+    });
+}
+
+/**
+ * 渲染校验报告
+ * @param {Object} validation - 后端返回的校验结果
+ */
+function renderValidationReport(validation) {
+    const container = document.getElementById("validationReport");
+    let html = "";
+
+    // 错误（红色）
+    validation.errors.forEach(msg => {
+        html += '<div class="validation-item validation-error"><i class="bi bi-x-circle-fill flex-shrink-0"></i><span>' + msg + '</span></div>';
+    });
+
+    // 警告（黄色）
+    validation.warnings.forEach(msg => {
+        html += '<div class="validation-item validation-warn"><i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i><span>' + msg + '</span></div>';
+    });
+
+    // 自动修正（蓝色）
+    validation.corrections.forEach(msg => {
+        html += '<div class="validation-item validation-fix"><i class="bi bi-wrench flex-shrink-0"></i><span>' + msg + '</span></div>';
+    });
+
+    // 全部通过（绿色）
+    if (validation.errors.length === 0 && validation.warnings.length === 0 && validation.corrections.length === 0) {
+        html += '<div class="validation-item validation-ok"><i class="bi bi-check-circle-fill flex-shrink-0"></i><span>数据校验通过，无异常</span></div>';
+    }
+
+    container.innerHTML = html;
+    container.style.display = "block";
+}
+
+/**
+ * 渲染型值表预览表格
+ * @param {Object} data - 解析后的型值表数据
+ */
+function renderPreviewTable(data) {
+    // 填充水线选择下拉框
+    const wlSelect = document.getElementById("wlSelect");
+    wlSelect.innerHTML = "";
+    data.waterlines.forEach((z, idx) => {
+        const opt = document.createElement("option");
+        opt.value = idx;
+        opt.textContent = "WL" + z.toFixed(1) + " (z = " + z.toFixed(1) + " m)";
+        wlSelect.appendChild(opt);
+    });
+    // 默认选最后一条水线（通常是设计吃水）
+    selectedWlIdx = data.waterlines.length - 1;
+    wlSelect.value = selectedWlIdx;
+
+    // 更新设计吃水输入框
+    document.getElementById("inputDraft").value = data.waterlines[selectedWlIdx].toFixed(1);
+
+    // 渲染表格
+    renderPreviewTableForWl(data, selectedWlIdx);
+
+    // 更新徽章
+    document.getElementById("previewBadge").textContent = data.n_stations + " 站 x " + data.n_waterlines + " 水线";
+}
+
+/**
+ * 渲染指定水线的型值表预览
+ */
+function renderPreviewTableForWl(data, wlIdx) {
+    const table = document.getElementById("previewTable");
+    const halfBreadths = data.offsets[wlIdx];
+
+    let html = "<thead><tr><th>站号 x (m)</th><th>半宽 y (m)</th><th>全宽 2y (m)</th></tr></thead><tbody>";
+
+    data.stations.forEach((x, i) => {
+        const y = halfBreadths[i];
+        html += "<tr><td>" + x.toFixed(3) + "</td><td>" + y.toFixed(3) + "</td><td>" + (2*y).toFixed(3) + "</td></tr>";
+    });
+    html += "</tbody>";
+    table.innerHTML = html;
+}
+
+/**
+ * 水线选择变化时更新预览和设计吃水
+ */
+function onWaterlineSelect() {
+    if (!excelOffsetData) return;
+    selectedWlIdx = parseInt(document.getElementById("wlSelect").value);
+    const z = excelOffsetData.waterlines[selectedWlIdx];
+    document.getElementById("inputDraft").value = z.toFixed(1);
+    renderPreviewTableForWl(excelOffsetData, selectedWlIdx);
+}
+
+/**
+ * 确认使用 Excel 数据
+ * 将选中水线的半宽数据填入手动输入框，并切换到手动输入模式
+ * 这样计算逻辑完全复用阶段1的 runCalculate()，无需修改
+ */
+function confirmPreview() {
+    if (!excelOffsetData) return;
+
+    const stations     = excelOffsetData.stations;
+    const halfBreadths = excelOffsetData.offsets[selectedWlIdx];
+    const z            = excelOffsetData.waterlines[selectedWlIdx];
+
+    // 将数据填入手动输入框
+    let text = "";
+    stations.forEach((x, i) => {
+        text += x.toFixed(3) + ", " + halfBreadths[i].toFixed(3) + "\n";
+    });
+    document.getElementById("offsetsInput").value = text.trim();
+    document.getElementById("inputDraft").value   = z.toFixed(1);
+
+    // 切换到手动输入模式（复用阶段1计算逻辑）
+    switchInputMode("manual");
+
+    setStatus("success", "已导入 WL" + z.toFixed(1) + " 的数据（" + stations.length + " 站），可直接点击计算");
+}
+
+/**
+ * 设置上传状态栏
+ */
+function setUploadStatus(type, msg) {
+    const el = document.getElementById("uploadStatus");
+    const iconMap = {
+        idle:    "bi-info-circle",
+        loading: "bi-hourglass-split",
+        success: "bi-check-circle-fill",
+        error:   "bi-exclamation-triangle-fill"
+    };
+    el.className = "status-bar status-" + type;
+    el.innerHTML = '<i class="bi ' + (iconMap[type] || "bi-info-circle") + '"></i><span>' + msg + "</span>";
+}
+
+// ============================================================
+// 阶段3 新增：多吃水全参数计算
+// ============================================================
+
+// 全局变量：保存当前型值表数据（供多吃水计算使用）
+let currentOffsetsData = null;  // 完整型值表（含所有水线）
+let lastTableResult    = null;  // 最近一次多吃水计算结果
+
+// 公式定义（用于渲染公式说明卡片）
+const FORMULAS = [
+    { name: "排水体积 ∇",     eq: "∇ = ∫₀ᵈ Aw(z) dz",                    note: "各水线面积沿吃水方向积分（梯形法）" },
+    { name: "排水量 Δ（海水）",eq: "Δ = 1.025 · ∇",                        note: "海水密度 ρ=1.025 t/m³" },
+    { name: "排水量 Δ（淡水）",eq: "Δ = 1.000 · ∇",                        note: "淡水密度 ρ=1.000 t/m³" },
+    { name: "浮心纵坐标 xb",   eq: "xb = (1/∇)·∫Aw(z)·xf(z) dz",         note: "各水线面积形心的加权平均" },
+    { name: "浮心高度 KB",     eq: "KB = (1/∇)·∫Aw(z)·z dz",              note: "§2.2 浮心垂向坐标" },
+    { name: "水线面积 Aw",     eq: "Aw = 2·∫y dx",                         note: "y为半宽，梯形法积分" },
+    { name: "漂心纵坐标 xf",   eq: "xf = (2·∫y·x dx) / Aw",               note: "水线面积形心" },
+    { name: "TPC",             eq: "TPC = Aw·ρ / 100",                     note: "吃水增1cm的排水量增量（t/cm）" },
+    { name: "MTC",             eq: "MTC = ρ·∇·BML / (100·L)",             note: "使船纵倾1cm的力矩（t·m/cm）" },
+    { name: "横稳心半径 BM",   eq: "BM = IL/∇，IL=(2/3)·∫y³dx - Aw·xf²", note: "§2.4 初稳性" },
+    { name: "纵稳心半径 BML",  eq: "BML = IT/∇，IT=2·∫y·x²dx - Aw·xf²",  note: "纵稳性" },
+    { name: "稳心高度 KM",     eq: "KM = KB + BM",                         note: "§2.4" },
+    { name: "方形系数 Cb",     eq: "Cb = ∇/(L·B·d)",                      note: "§1.3 船型系数" },
+    { name: "棱形系数 Cp",     eq: "Cp = ∇/(Am·L)",                       note: "Am为中横剖面面积" },
+    { name: "水线面系数 Cwp",  eq: "Cwp = Aw/(L·B)",                      note: "§1.3" },
+    { name: "中剖面系数 Cm",   eq: "Cm = Am/(B·d)",                       note: "§1.3" },
+];
+
+// 当前显示的列（默认全显示）
+let visibleCols = null;
+
+/**
+ * 执行多吃水全参数计算
+ * 读取型值表数据 → 调用后端 /calc_table → 渲染结果表格
+ */
+function runTableCalc() {
+    const btn = document.getElementById("tableCalcBtn");
+
+    // ── 获取型值表数据 ────────────────────────────────────
+    // 优先使用 Excel 上传的完整数据，否则从手动输入构建
+    let offsetsData = buildOffsetsData();
+    if (!offsetsData) return;
+
+    // ── 读取吃水范围参数 ──────────────────────────────────
+    const dMinVal  = document.getElementById("dMin").value.trim();
+    const dMaxVal  = document.getElementById("dMax").value.trim();
+    const dStepVal = parseFloat(document.getElementById("dStep").value) || 0.5;
+    const method   = document.getElementById("calcMethod").value;
+
+    const payload = {
+        offsets_data: offsetsData,
+        d_step: dStepVal,
+        method: method,
+    };
+    if (dMinVal)  payload.d_min  = parseFloat(dMinVal);
+    if (dMaxVal)  payload.d_max  = parseFloat(dMaxVal);
+
+    // ── 发送请求 ──────────────────────────────────────────
+    btn.innerHTML = '<span class="spinner-inline"></span>计算中...';
+    btn.disabled = true;
+    setTableStatus("loading", "正在遍历计算各吃水静水力参数...");
+
+    fetch("/calc_table", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+        btn.innerHTML = '<i class="bi bi-table me-2"></i>生成完整静水力计算表';
+        btn.disabled = false;
+
+        if (res.success) {
+            lastTableResult = res.table;
+            const t = res.table;
+            const mname = method === "trapz" ? "梯形法" : "辛普森法";
+            setTableStatus("success",
+                "计算完成：" + t.n_drafts + " 个吃水，14项参数，方法：" + mname);
+            renderHydroTable(t);
+        } else {
+            setTableStatus("error", "计算失败：" + res.msg);
+        }
+    })
+    .catch(err => {
+        btn.innerHTML = '<i class="bi bi-table me-2"></i>生成完整静水力计算表';
+        btn.disabled = false;
+        setTableStatus("error", "网络错误：" + err.message);
+    });
+}
+
+/**
+ * 构建型值表数据对象（供多吃水计算使用）
+ * 优先使用 Excel 上传的完整数据（含所有水线）
+ * 若无 Excel 数据，则从手动输入构建（仅单水线）
+ */
+function buildOffsetsData() {
+    // 优先使用 Excel 上传的完整数据
+    if (excelOffsetData) {
+        return {
+            stations:   excelOffsetData.stations,
+            waterlines: excelOffsetData.waterlines,
+            offsets:    excelOffsetData.offsets,
+        };
+    }
+
+    // 从手动输入构建（仅单水线，多吃水计算精度有限）
+    const draft = parseFloat(document.getElementById("inputDraft").value);
+    const offsetsText = document.getElementById("offsetsInput").value;
+
+    if (!offsetsText.trim()) {
+        setTableStatus("error", "请先上传 Excel 型值表或输入手动数据");
+        return null;
+    }
+    if (isNaN(draft) || draft <= 0) {
+        setTableStatus("error", "请输入有效的设计吃水");
+        return null;
+    }
+
+    let parsed;
+    try {
+        parsed = parseOffsets(offsetsText);
+    } catch (e) {
+        setTableStatus("error", "型值表解析失败：" + e.message);
+        return null;
+    }
+
+    // 手动输入只有单水线，构建简单的两水线数据（基线+设计吃水）
+    return {
+        stations:   parsed.stations,
+        waterlines: [0.0, draft],
+        offsets:    [
+            parsed.stations.map(() => 0.0),  // 基线：全零
+            parsed.halfBreadths,              // 设计吃水处
+        ],
+    };
+}
+
+/**
+ * 渲染多吃水静水力计算表
+ * @param {Object} table - 后端返回的计算表数据
+ */
+function renderHydroTable(table) {
+    const rows    = table.rows;
+    const columns = table.columns;
+
+    // 初始化可见列（默认全显示）
+    if (!visibleCols) {
+        visibleCols = new Set(columns.map(c => c.key));
+    }
+
+    // ── 渲染列切换按钮 ────────────────────────────────────
+    const toggleContainer = document.getElementById("colToggles");
+    toggleContainer.innerHTML = "";
+    columns.forEach(col => {
+        const btn = document.createElement("button");
+        btn.className = "col-toggle-btn" + (visibleCols.has(col.key) ? " active" : "");
+        btn.textContent = col.key;
+        btn.title = col.label + " (" + col.unit + ")";
+        btn.onclick = () => {
+            if (visibleCols.has(col.key)) {
+                if (col.key !== "d") visibleCols.delete(col.key);  // 吃水列不可隐藏
+            } else {
+                visibleCols.add(col.key);
+            }
+            renderHydroTable(table);
+        };
+        toggleContainer.appendChild(btn);
+    });
+
+    // ── 过滤可见列 ────────────────────────────────────────
+    const visCols = columns.filter(c => visibleCols.has(c.key));
+
+    // ── 渲染表头 ──────────────────────────────────────────
+    const thead = document.getElementById("hydroThead");
+    let thHtml = "<tr>";
+    visCols.forEach(col => {
+        thHtml += "<th title='" + col.label + "'>" + col.label + "<br><small style='font-weight:normal;opacity:0.8;'>" + col.unit + "</small></th>";
+    });
+    thHtml += "</tr>";
+    thead.innerHTML = thHtml;
+
+    // ── 渲染数据行 ────────────────────────────────────────
+    const tbody = document.getElementById("hydroTbody");
+    let tbHtml = "";
+    rows.forEach(row => {
+        tbHtml += "<tr>";
+        visCols.forEach(col => {
+            const val = row[col.key];
+            const fmt = typeof val === "number" ? val.toFixed(col.fmt === ".3f" ? 3 : 4) : val;
+            tbHtml += "<td>" + fmt + "</td>";
+        });
+        tbHtml += "</tr>";
+    });
+    tbody.innerHTML = tbHtml;
+
+    // ── 更新徽章 ──────────────────────────────────────────
+    document.getElementById("tableBadge").textContent =
+        table.n_drafts + " 个吃水 × " + visCols.length + " 列";
+
+    // ── 渲染公式说明 ──────────────────────────────────────
+    renderFormulas();
+
+    // ── 显示面板 ──────────────────────────────────────────
+    document.getElementById("tablePanel").style.display = "block";
+    document.getElementById("welcomePanel").style.display = "none";
+}
+
+/**
+ * 渲染公式说明卡片
+ */
+function renderFormulas() {
+    const grid = document.getElementById("formulaGrid");
+    if (grid.innerHTML) return;  // 已渲染过，不重复
+
+    let html = "";
+    FORMULAS.forEach(f => {
+        html += '<div class="col-md-6 col-lg-4">' +
+            '<div class="formula-card">' +
+            '<div class="f-name">' + f.name + '</div>' +
+            '<div class="f-eq">' + f.eq + '</div>' +
+            '<div class="f-note">' + f.note + '</div>' +
+            '</div></div>';
+    });
+    grid.innerHTML = html;
+}
+
+/**
+ * 展开/收起公式说明
+ */
+function toggleFormulas() {
+    const panel = document.getElementById("formulaPanel");
+    const chevron = document.getElementById("formulaChevron");
+    if (panel.style.display === "none") {
+        panel.style.display = "block";
+        chevron.className = "bi bi-chevron-up";
+        renderFormulas();
+    } else {
+        panel.style.display = "none";
+        chevron.className = "bi bi-chevron-down";
+    }
+}
+
+/**
+ * 导出多吃水静水力计算表为 Excel
+ */
+function exportHydrostatics() {
+    if (!lastTableResult) {
+        alert("请先执行多吃水计算");
+        return;
+    }
+
+    const btn = document.getElementById("exportTableBtn");
+    btn.innerHTML = '<span class="spinner-inline"></span>生成中...';
+    btn.disabled = true;
+
+    fetch("/export_hydrostatics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: lastTableResult })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("服务器返回错误");
+        return res.blob();
+    })
+    .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "静水力计算表.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        btn.innerHTML = '<i class="bi bi-file-earmark-excel me-1"></i>导出 Excel';
+        btn.disabled = false;
+        setTableStatus("success", "Excel 已导出，请查看下载文件夹");
+    })
+    .catch(err => {
+        btn.innerHTML = '<i class="bi bi-file-earmark-excel me-1"></i>导出 Excel';
+        btn.disabled = false;
+        setTableStatus("error", "导出失败：" + err.message);
+    });
+}
+
+/**
+ * 设置多吃水计算状态栏
+ */
+function setTableStatus(type, msg) {
+    const el = document.getElementById("tableCalcStatus");
+    const iconMap = {
+        idle:    "bi-info-circle",
+        loading: "bi-hourglass-split",
+        success: "bi-check-circle-fill",
+        error:   "bi-exclamation-triangle-fill"
+    };
+    el.className = "status-bar status-" + type;
+    el.innerHTML = '<i class="bi ' + (iconMap[type] || "bi-info-circle") + '"></i><span>' + msg + "</span>";
+}
+
+// ============================================================
+// 阶段4 新增：邦戎曲线计算 + 静水力/邦戎曲线绘制
+// ============================================================
+
+let bonjeanData = null;   // 邦戎曲线计算结果
+
+/**
+ * 计算邦戎曲线
+ */
+function runBonjean() {
+    const btn = document.getElementById("bonjeanBtn");
+    let offsetsData = buildOffsetsData();
+    if (!offsetsData) return;
+
+    btn.innerHTML = '<span class="spinner-inline"></span>计算中...';
+    btn.disabled = true;
+    setPlotStatus("loading", "正在计算各站横剖面面积...");
+
+    const method = document.getElementById("calcMethod").value;
+
+    fetch("/calc_bonjean", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offsets_data: offsetsData, method: method })
+    })
+    .then(r => r.json())
+    .then(res => {
+        btn.innerHTML = '<i class="bi bi-graph-up me-2"></i>计算邦戎曲线';
+        btn.disabled = false;
+
+        if (res.success) {
+            bonjeanData = res.bonjean;
+            setPlotStatus("success",
+                "邦戎曲线计算完成：" + bonjeanData.n_stations + " 站 × " + bonjeanData.n_waterlines + " 水线");
+
+            // 渲染邦戎曲线数据表
+            renderBonjeanTable(bonjeanData);
+
+            // 解锁预览和导出按钮
+            document.getElementById("previewBonjeanBtn").disabled = false;
+            if (lastTableResult) {
+                document.getElementById("previewHydroBtn").disabled = false;
+                document.getElementById("exportPlotsBtn").disabled = false;
+            }
+
+            // 显示曲线面板
+            document.getElementById("plotPanel").style.display = "block";
+            document.getElementById("welcomePanel").style.display = "none";
+
+        } else {
+            setPlotStatus("error", "计算失败：" + res.msg);
+        }
+    })
+    .catch(err => {
+        btn.innerHTML = '<i class="bi bi-graph-up me-2"></i>计算邦戎曲线';
+        btn.disabled = false;
+        setPlotStatus("error", "网络错误：" + err.message);
+    });
+}
+
+/**
+ * 预览静水力曲线
+ */
+function previewHydro() {
+    if (!lastTableResult) {
+        setPlotStatus("error", "请先执行多吃水计算（Step 4）");
+        return;
+    }
+    showPlot('hydro');
+    setPlotStatus("loading", "正在生成静水力曲线预览...");
+    document.getElementById("plotLoading").style.display = "block";
+    document.getElementById("plotImg").style.display = "none";
+    document.getElementById("plotEmpty").style.display = "none";
+
+    fetch("/preview_hydrostatics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ table: lastTableResult })
+    })
+    .then(r => r.json())
+    .then(res => {
+        document.getElementById("plotLoading").style.display = "none";
+        if (res.success) {
+            const img = document.getElementById("plotImg");
+            img.src = "data:image/png;base64," + res.image;
+            img.style.display = "block";
+            document.getElementById("plotEmpty").style.display = "none";
+            setPlotStatus("success", "静水力曲线预览已生成（点击图片放大）");
+            document.getElementById("previewHydroBtn").disabled = false;
+            document.getElementById("exportPlotsBtn").disabled = false;
+        } else {
+            document.getElementById("plotEmpty").style.display = "block";
+            setPlotStatus("error", "预览失败：" + res.msg);
+        }
+    })
+    .catch(err => {
+        document.getElementById("plotLoading").style.display = "none";
+        document.getElementById("plotEmpty").style.display = "block";
+        setPlotStatus("error", "网络错误：" + err.message);
+    });
+}
+
+/**
+ * 预览邦戎曲线
+ */
+function previewBonjeanPlot() {
+    if (!bonjeanData) {
+        setPlotStatus("error", "请先计算邦戎曲线");
+        return;
+    }
+    showPlot('bonjean');
+    setPlotStatus("loading", "正在生成邦戎曲线预览...");
+    document.getElementById("plotLoading").style.display = "block";
+    document.getElementById("plotImg").style.display = "none";
+    document.getElementById("plotEmpty").style.display = "none";
+
+    fetch("/preview_bonjean", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bonjean: bonjeanData })
+    })
+    .then(r => r.json())
+    .then(res => {
+        document.getElementById("plotLoading").style.display = "none";
+        if (res.success) {
+            const img = document.getElementById("plotImg");
+            img.src = "data:image/png;base64," + res.image;
+            img.style.display = "block";
+            document.getElementById("plotEmpty").style.display = "none";
+            setPlotStatus("success", "邦戎曲线预览已生成（点击图片放大）");
+        } else {
+            document.getElementById("plotEmpty").style.display = "block";
+            setPlotStatus("error", "预览失败：" + res.msg);
+        }
+    })
+    .catch(err => {
+        document.getElementById("plotLoading").style.display = "none";
+        document.getElementById("plotEmpty").style.display = "block";
+        setPlotStatus("error", "网络错误：" + err.message);
+    });
+}
+
+/**
+ * 导出高清曲线图（PNG 300DPI + SVG）
+ */
+function exportPlots() {
+    if (!lastTableResult) {
+        alert("请先执行多吃水计算");
+        return;
+    }
+
+    const btn = document.getElementById("exportPlotsBtn");
+    btn.innerHTML = '<span class="spinner-inline"></span>生成中（约10秒）...';
+    btn.disabled = true;
+    setPlotStatus("loading", "正在生成 A3/300DPI 高清曲线图，请稍候...");
+
+    const shipName = document.getElementById("shipName").value.trim();
+
+    fetch("/export_plots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            table:     lastTableResult,
+            bonjean:   bonjeanData,
+            ship_name: shipName,
+            formats:   ["png", "svg"]
+        })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("服务器返回错误");
+        return res.blob();
+    })
+    .then(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "曲线图.zip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        btn.innerHTML = '<i class="bi bi-file-zip me-2"></i>导出高清曲线图（PNG+SVG）';
+        btn.disabled = false;
+        setPlotStatus("success", "高清曲线图已导出（ZIP包含 PNG 300DPI + SVG 矢量图）");
+    })
+    .catch(err => {
+        btn.innerHTML = '<i class="bi bi-file-zip me-2"></i>导出高清曲线图（PNG+SVG）';
+        btn.disabled = false;
+        setPlotStatus("error", "导出失败：" + err.message);
+    });
+}
+
+/**
+ * 渲染邦戎曲线数据表
+ */
+function renderBonjeanTable(bonjean) {
+    const stations   = bonjean.stations;
+    const waterlines = bonjean.waterlines;
+    const A_mat      = bonjean.A;   // [n_sta][n_wl]
+
+    // 表头：水线高度
+    let thHtml = "<tr><th>站号 x(m)</th>";
+    waterlines.forEach(z => {
+        thHtml += "<th>z=" + z.toFixed(1) + "</th>";
+    });
+    thHtml += "</tr>";
+    document.getElementById("bonjeanThead").innerHTML = thHtml;
+
+    // 数据行：各站横剖面面积
+    let tbHtml = "";
+    stations.forEach((x, i) => {
+        tbHtml += "<tr><td><b>" + x.toFixed(1) + "</b></td>";
+        A_mat[i].forEach(a => {
+            tbHtml += "<td>" + a.toFixed(3) + "</td>";
+        });
+        tbHtml += "</tr>";
+    });
+    document.getElementById("bonjeanTbody").innerHTML = tbHtml;
+
+    document.getElementById("bonjeanBadge").textContent =
+        "A(m²)  " + stations.length + "站 × " + waterlines.length + "水线";
+    document.getElementById("bonjeanTableCard").style.display = "block";
+}
+
+/**
+ * 切换曲线预览 Tab
+ */
+function showPlot(type) {
+    document.getElementById("tabHydro").classList.toggle("plot-tab-active", type === "hydro");
+    document.getElementById("tabBonjean").classList.toggle("plot-tab-active", type === "bonjean");
+    document.getElementById("plotPanel").style.display = "block";
+}
+
+/**
+ * 放大查看曲线图
+ */
+function zoomPlot(img) {
+    document.getElementById("plotModalImg").src = img.src;
+    document.getElementById("plotModal").style.display = "block";
+}
+
+/**
+ * 关闭放大模态框
+ */
+function closePlotModal() {
+    document.getElementById("plotModal").style.display = "none";
+}
+
+/**
+ * 设置曲线绘制状态栏
+ */
+function setPlotStatus(type, msg) {
+    const el = document.getElementById("plotStatus");
+    const iconMap = {
+        idle:    "bi-info-circle",
+        loading: "bi-hourglass-split",
+        success: "bi-check-circle-fill",
+        error:   "bi-exclamation-triangle-fill"
+    };
+    el.className = "status-bar status-" + type;
+    el.innerHTML = '<i class="bi ' + (iconMap[type] || "bi-info-circle") + '"></i><span>' + msg + "</span>";
+}
+
+// ══════════════════════════════════════════════════════════
+// 阶段6：装载工况稳性校核与规范判定 — JavaScript 函数
+// ══════════════════════════════════════════════════════════
+
+// 全局变量
+let loadingConditions = [];
+let currentLoadingCondition = null;
+let loadingConditionResults = {};
+
+/**
+ * 初始化 Step 6 — 加载装载工况列表
+ */
+async function initStep6() {
+    try {
+        const resp = await fetch('/list_loading_conditions');
+        const data = await resp.json();
+        
+        if (data.success) {
+            loadingConditions = data.conditions;
+            
+            // 填充工况选择下拉菜单
+            const select = document.getElementById('loadingConditionSelect');
+            select.innerHTML = '';
+            
+            loadingConditions.forEach(condition => {
+                const option = document.createElement('option');
+                option.value = condition;
+                option.textContent = condition;
+                select.appendChild(option);
+            });
+            
+            // 默认选择第一个
+            if (loadingConditions.length > 0) {
+                select.value = loadingConditions[0];
+                currentLoadingCondition = loadingConditions[0];
+                await loadConditionDetails(loadingConditions[0]);
+            }
+        }
+    } catch (error) {
+        console.error('初始化 Step 6 失败:', error);
+    }
+}
+
+/**
+ * 加载工况详细信息
+ */
+async function loadConditionDetails(conditionName) {
+    try {
+        const resp = await fetch('/get_loading_condition', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({condition_name: conditionName})
+        });
+        
+        const data = await resp.json();
+        
+        if (data.success) {
+            const condition = data.condition;
+            
+            // 显示工况参数
+            document.getElementById('lcTotalWeight').textContent = condition.total_weight.toFixed(2);
+            document.getElementById('lcXg').textContent = condition.xg.toFixed(2);
+            document.getElementById('lcYg').textContent = condition.yg.toFixed(2);
+            document.getElementById('lcZg').textContent = condition.zg.toFixed(2);
+            
+            // 显示舱室装载情况
+            renderCompartmentTable(condition.compartments);
+        }
+    } catch (error) {
+        console.error('加载工况详情失败:', error);
+    }
+}
+
+/**
+ * 渲染舱室装载表
+ */
+function renderCompartmentTable(compartments) {
+    const tbody = document.getElementById('compartmentTableBody');
+    tbody.innerHTML = '';
+    
+    for (const [compName, compData] of Object.entries(compartments)) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${compName}</td>
+            <td>${compData.weight.toFixed(2)}</td>
+            <td>${(compData.fill_ratio * 100).toFixed(0)}</td>
+            <td>${compData.xg.toFixed(2)}</td>
+            <td>${compData.zg.toFixed(2)}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+}
+
+/**
+ * 分析单个工况
+ */
+async function analyzeLoadingCondition() {
+    try {
+        const conditionName = document.getElementById('loadingConditionSelect').value;
+        
+        if (!currentOffsetsData || !currentHydrostaticsTable) {
+            alert('请先上传型值表数据');
+            return;
+        }
+        
+        setLoadingConditionStatus('loading', '正在分析工况...');
+        document.getElementById('analyzeBtn').disabled = true;
+        
+        const resp = await fetch('/analyze_loading_condition', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                offsets_data: currentOffsetsData,
+                hydrostatics_table: currentHydrostaticsTable,
+                condition_name: conditionName
+            })
+        });
+        
+        const data = await resp.json();
+        
+        if (data.success) {
+            loadingConditionResults[conditionName] = data;
+            
+            // 显示结果
+            displayAnalysisResults(data);
+            
+            setLoadingConditionStatus('success', '工况分析完成！');
+        } else {
+            setLoadingConditionStatus('error', '分析失败：' + data.msg);
+        }
+        
+        document.getElementById('analyzeBtn').disabled = false;
+    } catch (error) {
+        setLoadingConditionStatus('error', '分析出错：' + error.message);
+        document.getElementById('analyzeBtn').disabled = false;
+    }
+}
+
+/**
+ * 显示分析结果
+ */
+function displayAnalysisResults(data) {
+    const analysis = data.analysis;
+    const judgment = data.judgment;
+    
+    // 显示浮态
+    const floatingState = analysis.floating_state;
+    document.getElementById('draftMean').textContent = floatingState.draft_mean.toFixed(2);
+    document.getElementById('draftFwd').textContent = floatingState.draft_fwd.toFixed(2);
+    document.getElementById('draftAft').textContent = floatingState.draft_aft.toFixed(2);
+    document.getElementById('trim').textContent = floatingState.trim.toFixed(2);
+    
+    // 显示稳性指标
+    const indicators = judgment.indicators;
+    document.getElementById('gm').textContent = indicators.GM.toFixed(4);
+    document.getElementById('gzMax').textContent = indicators.GZ_max.toFixed(4);
+    document.getElementById('thetaMaxGz').textContent = indicators.theta_max_gz.toFixed(1);
+    document.getElementById('thetaVanish').textContent = indicators.theta_vanish.toFixed(1);
+    document.getElementById('kValue').textContent = indicators.K.toFixed(4);
+    
+    // 显示规范判定
+    displayJudgmentResults(judgment);
+    
+    // 显示 GZ 曲线预览
+    if (analysis.gz_curve && analysis.gz_curve.rows) {
+        plotGzCurvePreview(analysis.gz_curve);
+    }
+    
+    // 显示结果面板
+    document.getElementById('floatingStatePanel').style.display = 'block';
+    document.getElementById('stabilityIndicatorsPanel').style.display = 'block';
+    document.getElementById('judgmentPanel').style.display = 'block';
+    document.getElementById('gzPreviewPanel').style.display = 'block';
+}
+
+/**
+ * 显示规范判定结果
+ */
+function displayJudgmentResults(judgment) {
+    const overallPass = judgment.overall_pass;
+    const judgments = judgment.judgments;
+    
+    // 总体结论
+    const conclusionDiv = document.getElementById('judgmentConclusion');
+    if (overallPass) {
+        conclusionDiv.className = 'alert alert-success';
+        conclusionDiv.innerHTML = '<i class="bi bi-check-circle-fill"></i> <strong>✓ 稳性合格</strong>';
+    } else {
+        conclusionDiv.className = 'alert alert-danger';
+        conclusionDiv.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> <strong>✗ 稳性不合格</strong>';
+    }
+    
+    // 各衡准项
+    const tbody = document.getElementById('judgmentTableBody');
+    tbody.innerHTML = '';
+    
+    for (const [key, judgment_item] of Object.entries(judgments)) {
+        const tr = document.createElement('tr');
+        const status = judgment_item.passed ? '✓ 通过' : '✗ 不通过';
+        const statusClass = judgment_item.passed ? 'text-success' : 'text-danger';
+        
+        tr.innerHTML = `
+            <td>${key}</td>
+            <td>${judgment_item.value.toFixed(4)}</td>
+            <td>${judgment_item.unit}</td>
+            <td>≥ ${judgment_item.limit}</td>
+            <td class="${statusClass}"><strong>${status}</strong></td>
+            <td><small>${judgment_item.rule}</small></td>
+        `;
+        tbody.appendChild(tr);
+    }
+}
+
+/**
+ * 绘制 GZ 曲线预览（增强版）
+ */
+function plotGzCurvePreview(gzData) {
+    const canvas = document.getElementById('gzPreviewCanvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const rows = gzData.rows;
+    
+    if (!rows || rows.length === 0) return;
+    
+    // 清空画布
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // 提取数据
+    const thetas = rows.map(r => r.theta);
+    const gzs = rows.map(r => r.GZ);
+    
+    // 计算范围
+    const maxTheta = 90;
+    const maxGz = Math.max(...gzs, 0.3);
+    const minGz = Math.min(...gzs, 0);
+    
+    // 绘图参数
+    const margin = 60;
+    const width = canvas.width - 2 * margin;
+    const height = canvas.height - 2 * margin;
+    
+    // ── 绘制坐标轴 ──
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    
+    // X 轴
+    ctx.beginPath();
+    ctx.moveTo(margin, canvas.height - margin);
+    ctx.lineTo(canvas.width - margin, canvas.height - margin);
+    ctx.stroke();
+    
+    // Y 轴
+    ctx.beginPath();
+    ctx.moveTo(margin, margin);
+    ctx.lineTo(margin, canvas.height - margin);
+    ctx.stroke();
+    
+    // ── 绘制网格 ──
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 10; i++) {
+        const x = margin + (width / 10) * i;
+        const y = canvas.height - margin - (height / 10) * i;
+        
+        // 竖网格
+        ctx.beginPath();
+        ctx.moveTo(x, canvas.height - margin);
+        ctx.lineTo(x, margin);
+        ctx.stroke();
+        
+        // 横网格
+        ctx.beginPath();
+        ctx.moveTo(margin, y);
+        ctx.lineTo(canvas.width - margin, y);
+        ctx.stroke();
+    }
+    
+    // ── 绘制 GZ 曲线 ──
+    ctx.strokeStyle = '#2e7dd1';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    
+    for (let i = 0; i < rows.length; i++) {
+        const x = margin + (thetas[i] / maxTheta) * width;
+        const y = canvas.height - margin - ((gzs[i] - minGz) / (maxGz - minGz)) * height;
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    }
+    ctx.stroke();
+    
+    // ── 标注关键点 ──
+    const gzMax = gzData.GZ_max || Math.max(...gzs);
+    const thetaMaxGz = gzData.theta_max_gz || thetas[gzs.indexOf(gzMax)];
+    const thetaVanish = gzData.theta_vanish || 85;
+    
+    // GZ_max 点
+    const xMax = margin + (thetaMaxGz / maxTheta) * width;
+    const yMax = canvas.height - margin - ((gzMax - minGz) / (maxGz - minGz)) * height;
+    
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.arc(xMax, yMax, 6, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // GZ_max 标签
+    ctx.fillStyle = '#e74c3c';
+    ctx.font = 'bold 12px Arial';
+    ctx.fillText(`GZ_max=${gzMax.toFixed(3)}m`, xMax + 10, yMax - 10);
+    ctx.font = '11px Arial';
+    ctx.fillText(`θ=${thetaMaxGz.toFixed(1)}°`, xMax + 10, yMax + 5);
+    
+    // θ_vanish 线
+    const xVanish = margin + (thetaVanish / maxTheta) * width;
+    ctx.strokeStyle = '#27ae60';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(xVanish, margin);
+    ctx.lineTo(xVanish, canvas.height - margin);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // θ_vanish 标签
+    ctx.fillStyle = '#27ae60';
+    ctx.font = 'bold 11px Arial';
+    ctx.fillText(`θ_vanish=${thetaVanish.toFixed(1)}°`, xVanish - 40, margin + 20);
+    
+    // GZ_max 最小值衡准线
+    const yGzMin = canvas.height - margin - ((0.20 - minGz) / (maxGz - minGz)) * height;
+    ctx.strokeStyle = '#f39c12';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(margin, yGzMin);
+    ctx.lineTo(canvas.width - margin, yGzMin);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    ctx.fillStyle = '#f39c12';
+    ctx.font = '10px Arial';
+    ctx.fillText('GZ_max ≥ 0.20m（规范要求）', margin + 5, yGzMin - 5);
+    
+    // ── 坐标轴标签 ──
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'center';
+    
+    // X 轴标签
+    for (let i = 0; i <= 9; i++) {
+        const x = margin + (width / 9) * i;
+        const label = (maxTheta / 9 * i).toFixed(0);
+        ctx.fillText(label, x, canvas.height - margin + 25);
+    }
+    
+    // X 轴标题
+    ctx.font = 'bold 13px Arial';
+    ctx.fillText('横倾角 θ (°)', canvas.width / 2, canvas.height - 10);
+    
+    // Y 轴标签
+    ctx.textAlign = 'right';
+    ctx.font = '12px Arial';
+    for (let i = 0; i <= 10; i++) {
+        const y = canvas.height - margin - (height / 10) * i;
+        const label = (minGz + (maxGz - minGz) / 10 * i).toFixed(2);
+        ctx.fillText(label, margin - 15, y + 4);
+    }
+    
+    // Y 轴标题
+    ctx.save();
+    ctx.translate(15, canvas.height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 13px Arial';
+    ctx.fillText('复原力臂 GZ (m)', 0, 0);
+    ctx.restore();
+    
+    // ── 添加图例 ──
+    const legendX = canvas.width - 200;
+    const legendY = margin + 20;
+    
+    ctx.fillStyle = '#2e7dd1';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(legendX, legendY);
+    ctx.lineTo(legendX + 20, legendY);
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.font = '11px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('GZ 曲线', legendX + 25, legendY + 4);
+    
+    ctx.fillStyle = '#e74c3c';
+    ctx.beginPath();
+    ctx.arc(legendX + 10, legendY + 25, 4, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillStyle = '#333';
+    ctx.fillText('GZ_max', legendX + 25, legendY + 29);
+    
+    ctx.strokeStyle = '#27ae60';
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(legendX, legendY + 50);
+    ctx.lineTo(legendX + 20, legendY + 50);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#333';
+    ctx.fillText('θ_vanish', legendX + 25, legendY + 54);
+}
+
+/**
+ * 分析所有 4 种工况
+ */
+async function analyzeAllLoadingConditions() {
+    try {
+        if (!currentOffsetsData || !currentHydrostaticsTable) {
+            alert('请先上传型值表数据');
+            return;
+        }
+        
+        setLoadingConditionStatus('loading', '正在分析所有 4 种工况...');
+        document.getElementById('analyzeAllBtn').disabled = true;
+        
+        const resp = await fetch('/analyze_all_loading_conditions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                offsets_data: currentOffsetsData,
+                hydrostatics_table: currentHydrostaticsTable
+            })
+        });
+        
+        const data = await resp.json();
+        
+        if (data.success) {
+            // 保存所有结果
+            for (const [condName, result] of Object.entries(data.results)) {
+                loadingConditionResults[condName] = result;
+            }
+            
+            // 显示总结
+            displayAllConditionsSummary(data.summary, data.results);
+            
+            setLoadingConditionStatus('success', `全工况分析完成！合格: ${data.summary.passed}/${data.summary.total}`);
+        } else {
+            setLoadingConditionStatus('error', '分析失败：' + data.msg);
+        }
+        
+        document.getElementById('analyzeAllBtn').disabled = false;
+    } catch (error) {
+        setLoadingConditionStatus('error', '分析出错：' + error.message);
+        document.getElementById('analyzeAllBtn').disabled = false;
+    }
+}
+
+/**
+ * 显示所有工况的总结
+ */
+function displayAllConditionsSummary(summary, results) {
+    const tbody = document.getElementById('allConditionsSummaryBody');
+    tbody.innerHTML = '';
+    
+    for (const [condName, result] of Object.entries(results)) {
+        const judgment = result.judgment;
+        const passed = judgment.overall_pass;
+        const status = passed ? '✓ 合格' : '✗ 不合格';
+        const statusClass = passed ? 'text-success' : 'text-danger';
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${condName}</td>
+            <td class="${statusClass}"><strong>${status}</strong></td>
+            <td>${judgment.indicators.GM.toFixed(4)}</td>
+            <td>${judgment.indicators.GZ_max.toFixed(4)}</td>
+            <td>${judgment.indicators.theta_max_gz.toFixed(1)}</td>
+            <td>${judgment.indicators.theta_vanish.toFixed(1)}</td>
+            <td>${judgment.failed_items.length > 0 ? judgment.failed_items.join(', ') : '无'}</td>
+        `;
+        tbody.appendChild(tr);
+    }
+    
+    document.getElementById('allConditionsSummaryPanel').style.display = 'block';
+}
+
+/**
+ * 设置装载工况状态栏
+ */
+function setLoadingConditionStatus(type, msg) {
+    const el = document.getElementById('loadingConditionStatus');
+    const iconMap = {
+        idle:    'bi-info-circle',
+        loading: 'bi-hourglass-split',
+        success: 'bi-check-circle-fill',
+        error:   'bi-exclamation-triangle-fill'
+    };
+    el.className = 'status-bar status-' + type;
+    el.innerHTML = '<i class="bi ' + (iconMap[type] || 'bi-info-circle') + '"></i><span>' + msg + '</span>';
+}
+
+/**
+ * 页面加载时初始化 Step 6
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    initStep6();
+});
+
+/**
+ * 导出稳性校核报告 Excel
+ */
+function exportStabilityReport() {
+    const conditionName = document.getElementById('loadingConditionSelect').value;
+    
+    if (!loadingConditionResults[conditionName]) {
+        alert('请先分析工况');
+        return;
+    }
+    
+    const result = loadingConditionResults[conditionName];
+    
+    try {
+        setLoadingConditionStatus('loading', '正在导出 Excel...');
+        
+        fetch('/export_stability_report', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                condition_name: conditionName,
+                analysis: result.analysis,
+                judgment: result.judgment
+            })
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.success) {
+                // 下载文件
+                window.location.href = data.download_url;
+                setLoadingConditionStatus('success', `Excel 已导出：${data.file}`);
+            } else {
+                setLoadingConditionStatus('error', '导出失败：' + data.msg);
+            }
+        })
+        .catch(err => {
+            setLoadingConditionStatus('error', '导出出错：' + err.message);
+        });
+    } catch (error) {
+        setLoadingConditionStatus('error', '导出出错：' + error.message);
+    }
+}
+
+/**
+ * 导出全工况稳性校核报告 Excel
+ */
+function exportAllConditionsReport() {
+    if (Object.keys(loadingConditionResults).length === 0) {
+        alert('请先分析工况');
+        return;
+    }
+    
+    try {
+        setLoadingConditionStatus('loading', '正在导出全工况 Excel...');
+        
+        fetch('/export_all_conditions_report', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                results: loadingConditionResults
+            })
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.success) {
+                // 下载文件
+                window.location.href = data.download_url;
+                setLoadingConditionStatus('success', `全工况 Excel 已导出：${data.file}`);
+            } else {
+                setLoadingConditionStatus('error', '导出失败：' + data.msg);
+            }
+        })
+        .catch(err => {
+            setLoadingConditionStatus('error', '导出出错：' + err.message);
+        });
+    } catch (error) {
+        setLoadingConditionStatus('error', '导出出错：' + error.message);
+    }
+}
+
+/**
+ * 导出 GZ 曲线 PNG
+ */
+function exportGzCurve() {
+    const canvas = document.getElementById('gzPreviewCanvas');
+    if (!canvas) {
+        alert('请先绘制 GZ 曲线');
+        return;
+    }
+    
+    try {
+        // 将 Canvas 转换为 PNG 并下载
+        canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `GZ曲线_${new Date().getTime()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            setLoadingConditionStatus('success', 'GZ 曲线 PNG 已导出');
+        });
+    } catch (error) {
+        setLoadingConditionStatus('error', '导出出错：' + error.message);
+    }
+}
+
+// ══════════════════════════════════════════════════════════
+// Step 7：课程设计 Word 说明书生成（阶段7新增）
+// ══════════════════════════════════════════════════════════
+
+/**
+ * 生成 Word 说明书
+ */
+function generateWordReport() {
+    // 收集学生信息
+    const userInfo = {
+        class_name: document.getElementById('wordClassName')?.value || '船舶20XX班',
+        student_name: document.getElementById('wordStudentName')?.value || 'XXX',
+        student_id: document.getElementById('wordStudentId')?.value || '20XXXXXX',
+        instructor: document.getElementById('wordInstructor')?.value || 'XXX'
+    };
+    
+    // 收集船舶信息
+    const shipData = {
+        ship_name: document.getElementById('wordShipName')?.value || '某型货船',
+        ship_type: document.getElementById('wordShipType')?.value || '沿海散货船',
+        LOA: parseFloat(document.getElementById('inputLBP')?.value || 92.0) + 6,
+        LBP: parseFloat(document.getElementById('inputLBP')?.value || 92.0),
+        B: 15.8,
+        D: 7.2,
+        d_design: parseFloat(document.getElementById('inputDraft')?.value || 5.8),
+        delta_full: 5200
+    };
+    
+    // 收集计算结果
+    const hydrostaticsResult = lastResult ? {
+        table: lastResult.hydrostatics_table || []
+    } : {};
+    
+    const bonjeanResult = lastBonjeanData || {};
+    
+    const stabilityResults = {
+        conditions: loadingConditionResults
+    };
+    
+    // 图片路径（需要先导出图片）
+    const imagePaths = {
+        hydrostatics: lastHydroPlotFilename || null,
+        bonjean: lastBonjeanPlotFilename || null,
+        gz_curve: lastGzPlotFilename || null
+    };
+    
+    setWordReportStatus('loading', '正在生成 Word 说明书...');
+    
+    fetch('/generate_word_report', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            user_info: userInfo,
+            ship_data: shipData,
+            hydrostatics_result: hydrostaticsResult,
+            bonjean_result: bonjeanResult,
+            stability_results: stabilityResults,
+            image_paths: imagePaths
+        })
+    })
+    .then(resp => resp.json())
+    .then(data => {
+        if (data.success) {
+            // 下载文件
+            window.location.href = data.download_url;
+            setWordReportStatus('success', `Word 说明书已生成：${data.file}`);
+        } else {
+            setWordReportStatus('error', '生成失败：' + data.msg);
+        }
+    })
+    .catch(err => {
+        setWordReportStatus('error', '生成出错：' + err.message);
+    });
+}
+
+/**
+ * 设置 Word 报告状态栏
+ */
+function setWordReportStatus(type, msg) {
+    const el = document.getElementById('wordReportStatus');
+    const iconMap = {
+        idle:    'bi-info-circle',
+        loading: 'bi-hourglass-split',
+        success: 'bi-check-circle-fill',
+        error:   'bi-exclamation-triangle-fill'
+    };
+    el.className = 'status-bar status-' + type;
+    el.innerHTML = '<i class="bi ' + (iconMap[type] || 'bi-info-circle') + '"></i><span>' + msg + '</span>';
+}
+
+// 全局变量：保存图片文件名
+let lastHydroPlotFilename = null;
+let lastBonjeanPlotFilename = null;
+let lastGzPlotFilename = null;
+
+</script>
+
+</body>
+</html>
